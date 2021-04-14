@@ -3,18 +3,6 @@ extern crate log;
 
 use humantime::format_duration;
 use oxigraph::io::GraphFormat;
-use oxigraph::model::NamedOrBlankNode;
-use oxigraph::model::Quad;
-use oxigraph::model::*;
-use oxigraph::sparql::{QueryResults, QueryResultsFormat};
-use oxigraph::MemoryStore;
-use sophia::graph::inmem::FastGraph;
-use sophia::graph::Graph;
-use sophia::ns;
-use sophia::term;
-use sophia::term::TTerm;
-use sophia::triple::stream::TripleSource;
-use sophia::triple::Triple;
 use std::error;
 use std::fs;
 use std::io;
@@ -28,10 +16,10 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let base_path: path::PathBuf = path::PathBuf::new().join("src/data");
 
     let biolink_local_path: path::PathBuf = base_path.clone().join("biolink-local.ttl");
-    let mut biolink_local_graph = cam_pipeline_rust::deserialize_graph(&biolink_local_path)?;
+    let biolink_local_graph = cam_pipeline_rust::deserialize_graph(&biolink_local_path)?;
 
     let biolink_model_path: path::PathBuf = base_path.clone().join("biolink-model.ttl");
-    let mut biolink_model_graph = cam_pipeline_rust::get_biolink_model(&biolink_model_path)?;
+    let biolink_model_graph = cam_pipeline_rust::get_biolink_model(&biolink_model_path)?;
 
     let output_path: path::PathBuf = base_path.clone().join("slot-mappings.nt");
     let output_file = fs::File::create(&output_path)?;

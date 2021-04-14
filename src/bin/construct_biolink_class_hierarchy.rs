@@ -2,19 +2,7 @@
 extern crate log;
 
 use humantime::format_duration;
-use itertools::Itertools;
 use oxigraph::io::GraphFormat;
-use oxigraph::model::NamedOrBlankNode;
-use oxigraph::model::*;
-use oxigraph::sparql::{QueryResults, QueryResultsFormat};
-use oxigraph::MemoryStore;
-use sophia::graph::inmem::FastGraph;
-use sophia::graph::{Graph, MutableGraph};
-use sophia::ns;
-use sophia::term;
-use sophia::term::{SimpleIri, TTerm};
-use sophia::triple::stream::TripleSource;
-use sophia::triple::Triple;
 use std::error;
 use std::fs;
 use std::io;

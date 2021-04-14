@@ -5,27 +5,18 @@ extern crate lazy_static;
 extern crate log;
 extern crate sophia;
 
-use humantime::format_duration;
-use itertools::Itertools;
 use oxigraph::model::Quad;
 use oxigraph::MemoryStore;
-use rio_api::formatter::TriplesFormatter;
-use rio_api::model;
-use rio_api::model::BlankNode;
-use sophia::dataset::inmem::FastDataset;
-use sophia::dataset::Dataset;
-use sophia::dataset::MutableDataset;
 use sophia::graph::inmem::FastGraph;
 use sophia::graph::Graph;
 use sophia::graph::MutableGraph;
 use sophia::ns;
 use sophia::parser;
-use sophia::serializer::{QuadSerializer, TripleSerializer};
+use sophia::serializer::TripleSerializer;
 use sophia::term;
 use sophia::term::{TTerm, TermKind};
 use sophia::triple::stream::TripleSource;
 use sophia::triple::Triple;
-use sophia::triple::TripleAsQuadFrom;
 use std::collections::HashMap;
 use std::error;
 use std::ffi::OsStr;
@@ -33,7 +24,6 @@ use std::fs;
 use std::io;
 use std::io::Write;
 use std::path;
-use std::time::Instant;
 
 lazy_static! {
     pub static ref SOPHIA_TO_OXIGRAPH_MAP: HashMap<sophia::term::SimpleIri<'static>, oxigraph::model::NamedNodeRef<'static>> = {
@@ -75,28 +65,6 @@ pub fn deserialize_graph(input_path: &path::PathBuf) -> Result<FastGraph, Box<dy
         _ => panic!("invalid extension"),
     };
     Ok(graph)
-}
-
-pub fn ubergraph_axioms(ubergraph_axioms_path: &path::PathBuf) -> Result<FastGraph, Box<dyn error::Error>> {
-    let graph = deserialize_graph(&ubergraph_axioms_path)?;
-
-    let mut output_graph = FastGraph::new();
-
-    let owl_ns = ns::Namespace::new("http://www.w3.org/2002/07/owl#")?;
-    let owl_ontology = owl_ns.get("Ontology")?;
-
-    let potential_base_ontology_triples: Vec<String> =
-        graph.triples_with_po(&ns::rdf::type_, &owl_ontology).map_triples(|t| t.s().value().to_string()).into_iter().collect::<Result<Vec<String>, _>>()?;
-
-    let base_ontology = term::SimpleIri::new(potential_base_ontology_triples.iter().next().unwrap(), None).unwrap();
-    debug!("base_ontology: {:?}", base_ontology);
-
-    graph.triples().for_each_triple(|triple| {
-        debug!("s: {:?}, p: {:?}, o: {:?}", triple.s(), triple.p(), triple.o());
-        output_graph.insert(triple.s(), triple.p(), triple.o()).unwrap();
-    })?;
-
-    Ok(output_graph)
 }
 
 pub fn insert_terms_into_graph(graph: &mut FastGraph, files: &Vec<path::PathBuf>, check_for_production_modelstate: bool) -> Result<(), Box<dyn error::Error>> {
@@ -162,7 +130,7 @@ pub fn get_biolink_model(biolink_model_path: &path::PathBuf) -> Result<FastGraph
 
 pub fn get_store(graphs: Vec<FastGraph>) -> Result<MemoryStore, Box<dyn error::Error>> {
     info!("getting store");
-    let mut store = MemoryStore::new();
+    let store = MemoryStore::new();
 
     for graph in graphs.iter() {
         graph.triples().for_each_triple(|t| {

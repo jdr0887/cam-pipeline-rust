@@ -7,16 +7,11 @@ use sophia::graph::{Graph, MutableGraph};
 use sophia::ns;
 use sophia::term::TTerm;
 use sophia::triple::stream::TripleSource;
-use sophia::triple::Triple;
-use sophia_api::term::matcher::TermMatcher;
-use std::error::Error;
-use std::fs;
-use std::io;
+use std::error;
 use std::path;
 use std::time::Instant;
-use structopt::StructOpt;
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<(), Box<dyn error::Error>> {
     let start = Instant::now();
     env_logger::init();
 

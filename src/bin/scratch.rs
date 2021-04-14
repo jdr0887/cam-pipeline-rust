@@ -1,12 +1,6 @@
 #[macro_use]
 extern crate log;
 
-use std::error::Error;
-use std::fs;
-use std::io;
-use std::path;
-use std::time::Instant;
-
 use horned_owl::ontology;
 use horned_owl::ontology::indexed::ThreeIndexedOntology;
 use humantime::format_duration;
@@ -20,8 +14,13 @@ use sophia::term;
 use sophia::term::TTerm;
 use sophia::triple::stream::TripleSource;
 use sophia::triple::Triple;
+use std::error;
+use std::fs;
+use std::io;
+use std::path;
+use std::time::Instant;
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<(), Box<dyn error::Error>> {
     let start = Instant::now();
     env_logger::init();
 

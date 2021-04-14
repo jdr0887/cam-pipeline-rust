@@ -3,15 +3,6 @@ extern crate log;
 
 use humantime::format_duration;
 use oxigraph::io::GraphFormat;
-use oxigraph::model::Quad;
-use oxigraph::MemoryStore;
-use sophia::graph::inmem::FastGraph;
-use sophia::graph::Graph;
-use sophia::ns;
-use sophia::term;
-use sophia::term::TTerm;
-use sophia::triple::stream::TripleSource;
-use sophia::triple::Triple;
 use std::error;
 use std::fs;
 use std::io;
@@ -24,7 +15,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     let base_path = path::PathBuf::new().join("src/data");
     let merged_ontologies_path = base_path.clone().join("merged-ontologies.nt");
-    let mut merged_ontologies_graph = cam_pipeline_rust::deserialize_graph(&merged_ontologies_path)?;
+    let merged_ontologies_graph = cam_pipeline_rust::deserialize_graph(&merged_ontologies_path)?;
 
     let store = cam_pipeline_rust::get_store(vec![merged_ontologies_graph])?;
     let results = store.query(include_str!("../sparql/subclass-closure.rq"))?;
