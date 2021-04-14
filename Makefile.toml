@@ -1,0 +1,95 @@
+[env]
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+RUST_LOG = "debug"
+
+# [tasks.default]
+# clear = true
+# dependencies = ["build"]
+
+# ---- BUILD ----
+[tasks.build]
+description = "Build"
+clear = true
+command = "cargo"
+args = ["build", "--release"]
+
+[tasks.checkout_noctua_models]
+dependencies = ["checkout_noctua_models_prod", "checkout_noctua_models_dev"]
+
+[tasks.checkout_noctua_models_prod]
+condition = { files_not_exist = ["../noctua-models-prod"] }
+script = [
+    "git clone https://github.com/geneontology/noctua-models.git ../noctua-models-prod",
+]
+
+[tasks.checkout_noctua_models_dev]
+condition = { files_not_exist = ["../noctua-models-dev"] }
+script = [
+    "rsync -av ../noctua-models-prod/ ../noctua-models-dev/",
+    "git -C ../noctua-models-dev checkout dev"
+]
+dependencies = ["checkout_noctua_models_prod"]
+
+[tasks.create_base_ontology]
+condition = { files_not_exist = ["src/data/ontologies.nt"] }
+description = "create base ontology"
+command = "target/release/create_base_ontology"
+
+[tasks.create_noctua_reactome_ontology]
+condition = { files_not_exist = ["src/data/noctua-reactome-ontology.nt"] }
+description = "create noctua reactome ontology"
+command = "target/release/create_noctua_reactome_ontology"
+
+[tasks.prep]
+run_task = { name = ["create_base_ontology", "create_noctua_reactome_ontology"], parallel = true }
+dependencies = ["build"]
+
+[tasks.construct_mesh_chebi_links]
+description = "construct mesh chebi links"
+command = "target/release/construct_mesh_chebi_links"
+
+[tasks.construct_protein_subclasses]
+description = "construct protein subclasses"
+command = "target/release/construct_protein_subclasses"
+
+[tasks.construct_reacto_uniprot_rules]
+description = "construct reacto uniprot rules"
+command = "target/release/construct_reacto_uniprot_rules"
+
+[tasks.construct_ncbi_gene_classes]
+condition = { files_exist = ["src/data/uniprot-to-ncbi-rules.ttl"] }
+description = "construct ncbi gene classes"
+command = "target/release/construct_ncbi_gene_classes"
+
+[tasks.construct_biolink_class_hierarchy]
+description = "construct biolink class hierarchy"
+command = "target/release/construct_biolink_class_hierarchy"
+
+[tasks.construct_ont_biolink_subclasses]
+description = "construct ont biolink subclasses"
+command = "target/release/construct_ont_biolink_subclasses"
+
+[tasks.construct_slot_mappings]
+description = "construct slot mappings"
+command = "target/release/construct_slot_mappings"
+
+[tasks.get_biolink_model]
+description = "get biolink model"
+command = "target/release/get_biolink_model"
+
+[tasks.construct]
+run_task = { name = ["construct_mesh_chebi_links", "construct_protein_subclasses", "construct_reacto_uniprot_rules", "construct_ncbi_gene_classes", "construct_biolink_class_hierarchy", "construct_ont_biolink_subclasses", "construct_slot_mappings"], parallel = true }
+dependencies = ["prep", "get_biolink_model"]
+
+[tasks.create_merged_ontologies]
+description = "create merged ontologies"
+command = "target/release/create_merged_ontologies"
+dependencies = ["construct"]
+
+[tasks.construct_is_defined_by]
+description = "construct is_defined_by"
+command = "target/release/construct_is_defined_by"
+
+[tasks.construct_subclass_closure]
+description = "construct subclass closure"
+command = "target/release/construct_subclass_closure"

@@ -1,0 +1,123 @@
+@prefix : <http://translator.renci.org/ubergraph-axioms.ofn#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@base <http://translator.renci.org/ubergraph-axioms.ofn> .
+
+<http://translator.renci.org/ubergraph-axioms.ofn> rdf:type owl:Ontology .
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://purl.obolibrary.org/obo/BFO_0000050
+<http://purl.obolibrary.org/obo/BFO_0000050> rdf:type owl:ObjectProperty ;
+                                             rdfs:label "part of"^^xsd:string .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000051
+<http://purl.obolibrary.org/obo/BFO_0000051> rdf:type owl:ObjectProperty ;
+                                             rdfs:label "has part"^^xsd:string .
+
+
+###  http://purl.obolibrary.org/obo/RO_0000052
+<http://purl.obolibrary.org/obo/RO_0000052> rdf:type owl:ObjectProperty ;
+                                            rdfs:subPropertyOf <http://purl.obolibrary.org/obo/RO_0002502> ;
+                                            rdfs:label "inheres in"^^xsd:string .
+
+
+###  http://purl.obolibrary.org/obo/RO_0002263
+<http://purl.obolibrary.org/obo/RO_0002263> rdf:type owl:ObjectProperty ;
+                                            rdfs:label "acts upstream of"^^xsd:string .
+
+
+###  http://purl.obolibrary.org/obo/RO_0002333
+<http://purl.obolibrary.org/obo/RO_0002333> rdf:type owl:ObjectProperty ;
+                                            rdfs:label "enabled by"^^xsd:string .
+
+
+###  http://purl.obolibrary.org/obo/RO_0002502
+<http://purl.obolibrary.org/obo/RO_0002502> rdf:type owl:ObjectProperty ;
+                                            rdfs:subPropertyOf <http://purl.obolibrary.org/obo/UPHENO_0000001> ;
+                                            rdfs:label "depends on"^^xsd:string .
+
+
+###  http://purl.obolibrary.org/obo/UPHENO_0000001
+<http://purl.obolibrary.org/obo/UPHENO_0000001> rdf:type owl:ObjectProperty ;
+                                                owl:propertyChainAxiom ( <http://purl.obolibrary.org/obo/BFO_0000051>
+                                                                         <http://purl.obolibrary.org/obo/RO_0002502>
+                                                                       ) ,
+                                                                       ( <http://purl.obolibrary.org/obo/UPHENO_0000001>
+                                                                         <http://purl.obolibrary.org/obo/BFO_0000050>
+                                                                       ) ;
+                                                rdfs:label "has phenotype affecting"^^xsd:string .
+
+
+###  http://translator.renci.org/ubergraph-axioms.ofn#acts_upstream_of_o_enabled_by
+:acts_upstream_of_o_enabled_by rdf:type owl:ObjectProperty ;
+                               owl:propertyChainAxiom ( <http://purl.obolibrary.org/obo/RO_0002263>
+                                                        <http://purl.obolibrary.org/obo/RO_0002333>
+                                                      ) ;
+                               rdfs:label "acts_upstream_of_o_enabled_by"^^xsd:string .
+
+
+###  http://translator.renci.org/ubergraph-axioms.ofn#decreasedAmountRole
+:decreasedAmountRole rdf:type owl:ObjectProperty .
+
+
+###  http://translator.renci.org/ubergraph-axioms.ofn#increasedAmountRole
+:increasedAmountRole rdf:type owl:ObjectProperty .
+
+
+###  http://translator.renci.org/ubergraph-axioms.ofn#is_decrease_of
+:is_decrease_of rdf:type owl:ObjectProperty ;
+                owl:propertyChainAxiom ( <http://purl.obolibrary.org/obo/BFO_0000051>
+                                         :is_decrease_of
+                                       ) ,
+                                       ( :decreasedAmountRole
+                                         <http://purl.obolibrary.org/obo/RO_0000052>
+                                       ) .
+
+
+###  http://translator.renci.org/ubergraph-axioms.ofn#is_increase_of
+:is_increase_of rdf:type owl:ObjectProperty ;
+                owl:propertyChainAxiom ( <http://purl.obolibrary.org/obo/BFO_0000051>
+                                         :is_increase_of
+                                       ) ,
+                                       ( :increasedAmountRole
+                                         <http://purl.obolibrary.org/obo/RO_0000052>
+                                       ) .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://purl.obolibrary.org/obo/HP_0000118
+<http://purl.obolibrary.org/obo/HP_0000118> rdf:type owl:Class ;
+                                            rdfs:subClassOf <http://purl.obolibrary.org/obo/UPHENO_0001001> .
+
+
+###  http://purl.obolibrary.org/obo/PATO_0000470
+<http://purl.obolibrary.org/obo/PATO_0000470> rdf:type owl:Class ;
+                                              owl:equivalentClass [ rdf:type owl:Restriction ;
+                                                                    owl:onProperty :increasedAmountRole ;
+                                                                    owl:hasSelf "true"^^xsd:boolean
+                                                                  ] .
+
+
+###  http://purl.obolibrary.org/obo/PATO_0001997
+<http://purl.obolibrary.org/obo/PATO_0001997> rdf:type owl:Class ;
+                                              owl:equivalentClass [ rdf:type owl:Restriction ;
+                                                                    owl:onProperty :decreasedAmountRole ;
+                                                                    owl:hasSelf "true"^^xsd:boolean
+                                                                  ] .
+
+
+###  http://purl.obolibrary.org/obo/UPHENO_0001001
+<http://purl.obolibrary.org/obo/UPHENO_0001001> rdf:type owl:Class .
+
+
+###  Generated by the OWL API (version 4.5.6) https://github.com/owlcs/owlapi

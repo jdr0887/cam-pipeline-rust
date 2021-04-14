@@ -1,0 +1,157 @@
+@prefix : <http://translator.renci.org/ubergraph.ofn#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@base <http://translator.renci.org/ubergraph.ofn> .
+
+<http://translator.renci.org/ubergraph.ofn> rdf:type owl:Ontology ;
+                                             owl:imports <http://purl.obolibrary.org/obo/bspo.owl> ,
+                                                         <http://purl.obolibrary.org/obo/chebi.owl> ,
+                                                         <http://purl.obolibrary.org/obo/ddanat.owl> ,
+                                                         <http://purl.obolibrary.org/obo/emapa.owl> ,
+                                                         <http://purl.obolibrary.org/obo/pato.owl> ,
+                                                         <http://purl.obolibrary.org/obo/wbbt.owl> ,
+                                                         <http://purl.obolibrary.org/obo/zfa.owl> ,
+                                                         <http://purl.obolibrary.org/obo/cl/cl-base.owl> ,
+                                                         <http://purl.obolibrary.org/obo/eco/eco-base.owl> ,
+                                                         <http://purl.obolibrary.org/obo/go/go-base.owl> ,
+                                                         <http://purl.obolibrary.org/obo/go/extensions/go-bfo-bridge.owl> ,
+                                                         <http://purl.obolibrary.org/obo/go/imports/chebi_import.owl> ,
+                                                         <http://purl.obolibrary.org/obo/go/noctua/neo.owl> ,
+                                                         <http://purl.obolibrary.org/obo/go/snapshot/extensions/reacto.owl> ,
+                                                         <http://purl.obolibrary.org/obo/hp/hp-base.owl> ,
+                                                         <http://purl.obolibrary.org/obo/mondo/releases/2020-09-09/mondo.owl> ,
+                                                         <http://purl.obolibrary.org/obo/ncbitaxon/subsets/taxslim-disjoint-over-in-taxon.owl> ,
+                                                         <http://purl.obolibrary.org/obo/ncbitaxon/subsets/taxslim.owl> ,
+                                                         <http://purl.obolibrary.org/obo/ro/ro-base.owl> ,
+                                                         <http://purl.obolibrary.org/obo/uberon/uberon-base.owl> ,
+                                                         <http://purl.obolibrary.org/obo/uberon/bridge/cl-bridge-to-caro.owl> ,
+                                                         <http://purl.obolibrary.org/obo/uberon/bridge/cl-bridge-to-wbbt.owl> ,
+                                                         <http://purl.obolibrary.org/obo/uberon/bridge/uberon-bridge-to-caro.owl> ,
+                                                         <http://purl.obolibrary.org/obo/uberon/bridge/uberon-bridge-to-wbbt.owl> ,
+                                                         <http://purl.obolibrary.org/obo/wbphenotype/wbphenotype-base.owl> ,
+                                                         <http://purl.obolibrary.org/obo/wbphenotype/imports/wbls_import.owl> .
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://purl.obolibrary.org/obo/IAO_0000136
+<http://purl.obolibrary.org/obo/IAO_0000136> rdf:type owl:ObjectProperty ;
+                                             rdfs:label "is about"@en .
+
+
+###  http://purl.obolibrary.org/obo/SEPIO_0000124
+<http://purl.obolibrary.org/obo/SEPIO_0000124> rdf:type owl:ObjectProperty ;
+                                               rdfs:label "has supporting reference"@en .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://purl.obolibrary.org/obo/DDANAT_0000401
+<http://purl.obolibrary.org/obo/DDANAT_0000401> owl:equivalentClass [ owl:intersectionOf ( <http://purl.obolibrary.org/obo/CL_0000003>
+                                                                                           [ rdf:type owl:Restriction ;
+                                                                                             owl:onProperty <http://purl.obolibrary.org/obo/RO_0002162> ;
+                                                                                             owl:someValuesFrom <http://purl.obolibrary.org/obo/NCBITaxon_44689>
+                                                                                           ]
+                                                                                         ) ;
+                                                                      rdf:type owl:Class
+                                                                    ] .
+
+
+###  http://purl.obolibrary.org/obo/DDANAT_0010001
+<http://purl.obolibrary.org/obo/DDANAT_0010001> owl:equivalentClass [ owl:intersectionOf ( <http://purl.obolibrary.org/obo/CARO_0000006>
+                                                                                           [ rdf:type owl:Restriction ;
+                                                                                             owl:onProperty <http://purl.obolibrary.org/obo/RO_0002162> ;
+                                                                                             owl:someValuesFrom <http://purl.obolibrary.org/obo/NCBITaxon_44689>
+                                                                                           ]
+                                                                                         ) ;
+                                                                      rdf:type owl:Class
+                                                                    ] .
+
+
+###  http://purl.obolibrary.org/obo/EMAPA_0
+<http://purl.obolibrary.org/obo/EMAPA_0> rdfs:subClassOf <http://purl.obolibrary.org/obo/CARO_0000000> ,
+                                                         [ owl:intersectionOf ( <http://purl.obolibrary.org/obo/CARO_0000000>
+                                                                                [ rdf:type owl:Restriction ;
+                                                                                  owl:onProperty <http://purl.obolibrary.org/obo/RO_0002162> ;
+                                                                                  owl:someValuesFrom <http://purl.obolibrary.org/obo/NCBITaxon_10090>
+                                                                                ]
+                                                                              ) ;
+                                                           rdf:type owl:Class
+                                                         ] .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000311
+<http://purl.obolibrary.org/obo/IAO_0000311> rdf:type owl:Class ;
+                                             rdfs:label "publication"@en .
+
+
+###  http://purl.obolibrary.org/obo/PO_0025131
+<http://purl.obolibrary.org/obo/PO_0025131> owl:equivalentClass [ owl:intersectionOf ( <http://purl.obolibrary.org/obo/CARO_0000000>
+                                                                                       [ rdf:type owl:Restriction ;
+                                                                                         owl:onProperty <http://purl.obolibrary.org/obo/RO_0002162> ;
+                                                                                         owl:someValuesFrom <http://purl.obolibrary.org/obo/NCBITaxon_33090>
+                                                                                       ]
+                                                                                     ) ;
+                                                                  rdf:type owl:Class
+                                                                ] .
+
+
+###  http://purl.obolibrary.org/obo/PO_0025606
+<http://purl.obolibrary.org/obo/PO_0025606> rdf:type owl:Class ;
+                                            owl:equivalentClass [ owl:intersectionOf ( <http://purl.obolibrary.org/obo/CL_0000003>
+                                                                                       [ rdf:type owl:Restriction ;
+                                                                                         owl:onProperty <http://purl.obolibrary.org/obo/RO_0002162> ;
+                                                                                         owl:someValuesFrom <http://purl.obolibrary.org/obo/NCBITaxon_33090>
+                                                                                       ]
+                                                                                     ) ;
+                                                                  rdf:type owl:Class
+                                                                ] .
+
+
+###  http://purl.obolibrary.org/obo/ZFA_0009000
+<http://purl.obolibrary.org/obo/ZFA_0009000> owl:equivalentClass [ owl:intersectionOf ( <http://purl.obolibrary.org/obo/CL_0000003>
+                                                                                        [ rdf:type owl:Restriction ;
+                                                                                          owl:onProperty <http://purl.obolibrary.org/obo/RO_0002162> ;
+                                                                                          owl:someValuesFrom <http://purl.obolibrary.org/obo/NCBITaxon_7955>
+                                                                                        ]
+                                                                                      ) ;
+                                                                   rdf:type owl:Class
+                                                                 ] .
+
+
+###  http://purl.obolibrary.org/obo/ZFA_0100000
+<http://purl.obolibrary.org/obo/ZFA_0100000> owl:equivalentClass [ owl:intersectionOf ( <http://purl.obolibrary.org/obo/CARO_0000000>
+                                                                                        [ rdf:type owl:Restriction ;
+                                                                                          owl:onProperty <http://purl.obolibrary.org/obo/RO_0002162> ;
+                                                                                          owl:someValuesFrom <http://purl.obolibrary.org/obo/NCBITaxon_7955>
+                                                                                        ]
+                                                                                      ) ;
+                                                                   rdf:type owl:Class
+                                                                 ] .
+
+
+#################################################################
+#    General axioms
+#################################################################
+
+[ rdf:type owl:Restriction ;
+  owl:onProperty <http://purl.obolibrary.org/obo/emapa#ends_at> ;
+  owl:someValuesFrom <http://purl.obolibrary.org/obo/TS_0> ;
+  rdfs:subClassOf <http://purl.obolibrary.org/obo/EMAPA_0>
+] .
+
+
+[ rdf:type owl:Restriction ;
+  owl:onProperty <http://purl.obolibrary.org/obo/emapa#starts_at> ;
+  owl:someValuesFrom <http://purl.obolibrary.org/obo/TS_0> ;
+  rdfs:subClassOf <http://purl.obolibrary.org/obo/EMAPA_0>
+] .
+
+
+###  Generated by the OWL API (version 4.5.6) https://github.com/owlcs/owlapi
