@@ -13,6 +13,12 @@ clear = true
 command = "cargo"
 args = ["build", "--release"]
 
+[tasks.reset]
+description = "reset"
+script = [
+    'find ./src/data -type f ! -name "biolink-local.ttl" ! -name "chebi_mesh.tsv" ! -name "ontologies.ttl" ! -name "ubergraph-axioms.ttl" ! -name "uniprot-to-ncbi-rules.ttl" ! -name "uniprot-to-ncbi.txt" -exec rm {} +'
+]
+
 [tasks.checkout_noctua_models]
 dependencies = ["checkout_noctua_models_prod", "checkout_noctua_models_dev"]
 
