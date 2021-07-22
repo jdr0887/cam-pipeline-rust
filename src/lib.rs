@@ -6,7 +6,6 @@ extern crate log;
 extern crate sophia;
 
 use oxigraph::model::Quad;
-use oxigraph::MemoryStore;
 use sophia::graph::inmem::FastGraph;
 use sophia::graph::Graph;
 use sophia::graph::MutableGraph;
@@ -128,9 +127,9 @@ pub fn get_biolink_model(biolink_model_path: &path::PathBuf) -> Result<FastGraph
     Ok(graph)
 }
 
-pub fn get_store(graphs: Vec<FastGraph>) -> Result<MemoryStore, Box<dyn error::Error>> {
+pub fn load_graphs_into_memory_store(graphs: Vec<FastGraph>) -> Result<oxigraph::MemoryStore, Box<dyn error::Error>> {
     info!("getting store");
-    let store = MemoryStore::new();
+    let store = oxigraph::MemoryStore::new();
 
     for graph in graphs.iter() {
         graph.triples().for_each_triple(|t| {
@@ -175,7 +174,63 @@ pub fn get_store(graphs: Vec<FastGraph>) -> Result<MemoryStore, Box<dyn error::E
                 }
             };
 
-            store.insert(Quad::new(subject, predicate, object, None));
+            let quad = Quad::new(subject, predicate, object, None);
+            store.insert(quad);
+        })?;
+    }
+
+    Ok(store)
+}
+
+pub fn load_graphs_into_rocksdb_store(db_path: &path::PathBuf, graphs: Vec<FastGraph>) -> Result<oxigraph::RocksDbStore, Box<dyn error::Error>> {
+    info!("getting store");
+    let store = oxigraph::RocksDbStore::open(db_path)?;
+
+    for graph in graphs.iter() {
+        graph.triples().for_each_triple(|t| {
+            // debug!("t.s(): {:?}, t.p(): {:?}, t.o(): {:?}", t.s(), t.p(), t.o());
+
+            let subject = {
+                match t.s().kind() {
+                    term::TermKind::Iri => oxigraph::model::NamedOrBlankNode::NamedNode(oxigraph::model::NamedNode::new(t.s().value()).unwrap()),
+                    term::TermKind::BlankNode => oxigraph::model::NamedOrBlankNode::BlankNode(oxigraph::model::BlankNode::new(t.s().value_raw().0).unwrap()),
+                    _ => return (),
+                }
+            };
+
+            let predicate = {
+                match t.p().kind() {
+                    term::TermKind::Iri => oxigraph::model::NamedNode::new(t.p().value()).unwrap(),
+                    _ => return (),
+                }
+            };
+
+            let object = {
+                match t.o().kind() {
+                    term::TermKind::Iri => oxigraph::model::Term::NamedNode(oxigraph::model::NamedNode::new(t.o().value()).unwrap()),
+                    term::TermKind::BlankNode => oxigraph::model::Term::BlankNode(oxigraph::model::BlankNode::new(t.o().value_raw().0).unwrap()),
+                    term::TermKind::Literal => match t.o().language() {
+                        Some(tag) => oxigraph::model::Term::Literal(oxigraph::model::Literal::new_language_tagged_literal(t.o().value_raw().0, tag).unwrap()),
+                        None => {
+                            let datatype = t.o().datatype().unwrap();
+                            let x = if SOPHIA_TO_OXIGRAPH_MAP.contains_key(&datatype) {
+                                oxigraph::model::Term::Literal(oxigraph::model::Literal::new_typed_literal(
+                                    t.o().value_raw().0,
+                                    SOPHIA_TO_OXIGRAPH_MAP.get(&datatype).unwrap().into_owned(),
+                                ))
+                            } else {
+                                debug!("datatype not in cached map: {:?}", datatype);
+                                oxigraph::model::Term::Literal(oxigraph::model::Literal::new_simple_literal(t.o().value_raw().0))
+                            };
+                            x
+                        }
+                    },
+                    _ => return (),
+                }
+            };
+
+            let quad = Quad::new(subject, predicate, object, None);
+            store.insert(&quad).unwrap();
         })?;
     }
 

@@ -21,7 +21,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let output_path: path::PathBuf = base_path.clone().join("biolink-class-hierarchy.nt");
     let output_file = fs::File::create(&output_path)?;
     let mut writer = io::BufWriter::new(output_file);
-    let store = cam_pipeline_rust::get_store(vec![biolink_model_graph])?;
+    let store = cam_pipeline_rust::load_graphs_into_memory_store(vec![biolink_model_graph])?;
     let results = store.query(include_str!("../sparql/construct-biolink-class-hierachy.rq"))?;
     results.write_graph(&mut writer, GraphFormat::NTriples)?;
 

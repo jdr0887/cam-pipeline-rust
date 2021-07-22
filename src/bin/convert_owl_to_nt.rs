@@ -23,9 +23,8 @@ struct Options {
     output: path::PathBuf,
 }
 fn main() -> Result<(), Box<dyn Error>> {
-    env_logger::init();
-
     let start = Instant::now();
+    env_logger::init();
     let options = Options::from_args();
     debug!("{:?}", options);
 

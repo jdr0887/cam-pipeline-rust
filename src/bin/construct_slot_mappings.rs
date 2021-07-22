@@ -24,7 +24,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let output_path: path::PathBuf = base_path.clone().join("slot-mappings.nt");
     let output_file = fs::File::create(&output_path)?;
     let mut writer = io::BufWriter::new(output_file);
-    let store = cam_pipeline_rust::get_store(vec![biolink_model_graph, biolink_local_graph])?;
+    let store = cam_pipeline_rust::load_graphs_into_memory_store(vec![biolink_model_graph, biolink_local_graph])?;
     let results = store.query(include_str!("../../src/sparql/construct-slot-mappings.rq"))?;
     results.write_graph(&mut writer, GraphFormat::NTriples)?;
 

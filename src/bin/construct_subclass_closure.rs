@@ -17,7 +17,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let merged_ontologies_path = base_path.clone().join("merged-ontologies.nt");
     let merged_ontologies_graph = cam_pipeline_rust::deserialize_graph(&merged_ontologies_path)?;
 
-    let store = cam_pipeline_rust::get_store(vec![merged_ontologies_graph])?;
+    let store = cam_pipeline_rust::load_graphs_into_memory_store(vec![merged_ontologies_graph])?;
     let results = store.query(include_str!("../sparql/subclass-closure.rq"))?;
 
     let output_path: path::PathBuf = base_path.clone().join("subclass-closure.nt");
