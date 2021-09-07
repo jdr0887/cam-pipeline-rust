@@ -10,27 +10,37 @@ use sophia::triple::stream::TripleSource;
 use std::error;
 use std::path;
 use std::time::Instant;
+use structopt::StructOpt;
 
+#[derive(StructOpt, Debug)]
+#[structopt(name = "create_merged_ontologies", about = "create merged ontologies")]
+struct Options {
+    #[structopt(short = "w", long = "work_dir", long_help = "work directory", required = true, parse(from_os_str))]
+    work_dir: path::PathBuf,
+}
 fn main() -> Result<(), Box<dyn error::Error>> {
     let start = Instant::now();
     env_logger::init();
 
-    let base_path: path::PathBuf = path::PathBuf::new().join("src/data");
+    let options = Options::from_args();
+    debug!("{:?}", options);
 
-    // let noctua_reactome_ontology_path: path::PathBuf = base_path.clone().join("noctua-reactome-ontology.nt");
-    // let biolink_model_path: path::PathBuf = base_path.clone().join("biolink-model.ttl");
-    // let biolink_local_path: path::PathBuf = base_path.clone().join("biolink-local.ttl");
+    let work_dir: path::PathBuf = options.work_dir;
 
-    let ontologies_path: path::PathBuf = base_path.clone().join("ontologies.nt");
-    let ubergraph_axioms_path: path::PathBuf = base_path.clone().join("ubergraph-axioms.ttl");
-    let uniprot_to_ncbi_rules_path: path::PathBuf = base_path.clone().join("uniprot-to-ncbi-rules.ttl");
-    let mesh_chebi_links_path: path::PathBuf = base_path.clone().join("mesh-chebi-links.nt");
-    let protein_subclasses_path: path::PathBuf = base_path.clone().join("protein-subclasses.nt");
-    let reacto_uniprot_rules_path: path::PathBuf = base_path.clone().join("reacto-uniprot-rules.nt");
-    let ncbi_gene_classes_path: path::PathBuf = base_path.clone().join("ncbi-gene-classes.nt");
-    let ont_biolink_subclasses_path: path::PathBuf = base_path.clone().join("ont-biolink-subclasses.nt");
-    let slot_mappings_path: path::PathBuf = base_path.clone().join("slot-mappings.nt");
-    let biolink_class_hierarchy_path: path::PathBuf = base_path.clone().join("biolink-class-hierarchy.nt");
+    // let noctua_reactome_ontology_path: path::PathBuf = work_dir.clone().join("noctua-reactome-ontology.nt");
+    // let biolink_model_path: path::PathBuf = work_dir.clone().join("biolink-model.ttl");
+    // let biolink_local_path: path::PathBuf = work_dir.clone().join("biolink-local.ttl");
+
+    let ontologies_path: path::PathBuf = work_dir.clone().join("ontologies.nt");
+    let ubergraph_axioms_path: path::PathBuf = work_dir.clone().join("ubergraph-axioms.ttl");
+    let uniprot_to_ncbi_rules_path: path::PathBuf = work_dir.clone().join("uniprot-to-ncbi-rules.ttl");
+    let mesh_chebi_links_path: path::PathBuf = work_dir.clone().join("mesh-chebi-links.nt");
+    let protein_subclasses_path: path::PathBuf = work_dir.clone().join("protein-subclasses.nt");
+    let reacto_uniprot_rules_path: path::PathBuf = work_dir.clone().join("reacto-uniprot-rules.nt");
+    let ncbi_gene_classes_path: path::PathBuf = work_dir.clone().join("ncbi-gene-classes.nt");
+    let ont_biolink_subclasses_path: path::PathBuf = work_dir.clone().join("ont-biolink-subclasses.nt");
+    let slot_mappings_path: path::PathBuf = work_dir.clone().join("slot-mappings.nt");
+    let biolink_class_hierarchy_path: path::PathBuf = work_dir.clone().join("biolink-class-hierarchy.nt");
 
     let files_to_merge = vec![
         ontologies_path,
@@ -92,7 +102,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let num_of_pred_disjoint_with_removed = graph.remove_matching(&sophia_api::term::matcher::ANY, &disjoint_with_tm, &sophia_api::term::matcher::ANY)?;
     debug!("number of triples removed where predicate is {}: {}", disjoint_with.value().to_string(), num_of_pred_disjoint_with_removed);
 
-    let output_path: path::PathBuf = base_path.clone().join("merged-ontologies.nt");
+    let output_path: path::PathBuf = work_dir.clone().join("merged-ontologies.nt");
     cam_pipeline_rust::serialize_graph(&output_path, &graph)?;
 
     info!("Duration: {}", format_duration(start.elapsed()).to_string());

@@ -12,13 +12,15 @@ use sophia::graph::{Graph, MutableGraph};
 use sophia::ns;
 use sophia::term::TTerm;
 use sophia::triple::stream::TripleSource;
+use structopt::StructOpt;
 use walkdir::DirEntry;
 
 fn main() -> Result<(), Box<dyn error::Error>> {
     let start = Instant::now();
     env_logger::init();
 
-    let base_path: path::PathBuf = path::PathBuf::new().join("src/data");
+    // let base_path: path::PathBuf = path::PathBuf::new().join("src/data");
+    let base_path: path::PathBuf = path::PathBuf::new().join("/tmp/owx");
     let tmp_path: path::PathBuf = base_path.clone().join("tmp");
     let ttl_files: Vec<DirEntry> =
         walkdir::WalkDir::new(&tmp_path).min_depth(1).max_depth(1).into_iter().filter_map(|x| x.ok()).filter(|x| x.file_name().to_string_lossy().ends_with(".ttl")).collect();

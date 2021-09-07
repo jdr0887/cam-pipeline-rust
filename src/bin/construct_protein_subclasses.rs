@@ -12,19 +12,29 @@ use sophia::triple::Triple;
 use std::error;
 use std::path;
 use std::time::Instant;
+use structopt::StructOpt;
 
+#[derive(StructOpt, Debug)]
+#[structopt(name = "construct_protein_subclasses", about = "construct protein subclasses")]
+struct Options {
+    #[structopt(short = "w", long = "work_dir", long_help = "work directory", required = true, parse(from_os_str))]
+    work_dir: path::PathBuf,
+}
 fn main() -> Result<(), Box<dyn error::Error>> {
     let start = Instant::now();
     env_logger::init();
 
-    let base_path: path::PathBuf = path::PathBuf::new().join("src/data");
+    let options = Options::from_args();
+    debug!("{:?}", options);
 
-    let noctua_ontology_path: path::PathBuf = base_path.clone().join("noctua-reactome-ontology.nt");
+    let work_dir: path::PathBuf = options.work_dir;
+
+    let noctua_ontology_path: path::PathBuf = work_dir.clone().join("noctua-reactome-ontology.nt");
     let noctua_ontology_graph = cam_pipeline_rust::deserialize_graph(&noctua_ontology_path)?;
 
     let output_graph = protein_subclasses(&noctua_ontology_graph)?;
 
-    let output_path: path::PathBuf = base_path.clone().join("protein-subclasses.nt");
+    let output_path: path::PathBuf = work_dir.clone().join("protein-subclasses.nt");
     cam_pipeline_rust::serialize_graph(&output_path, &output_graph)?;
 
     info!("Duration: {}", format_duration(start.elapsed()).to_string());

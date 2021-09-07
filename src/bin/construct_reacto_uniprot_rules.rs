@@ -13,10 +13,22 @@ use std::error;
 use std::fs;
 use std::path;
 use std::time::Instant;
+use structopt::StructOpt;
 
+#[derive(StructOpt, Debug)]
+#[structopt(name = "construct_reacto_uniprot_rules", about = "construct REACTO UNIPROT rules")]
+struct Options {
+    #[structopt(short = "w", long = "work_dir", long_help = "work directory", required = true, parse(from_os_str))]
+    work_dir: path::PathBuf,
+}
 fn main() -> Result<(), Box<dyn error::Error>> {
     let start = Instant::now();
     env_logger::init();
+
+    let options = Options::from_args();
+    debug!("{:?}", options);
+
+    let work_dir: path::PathBuf = options.work_dir;
 
     let home_dir = dirs::home_dir().unwrap();
     let owl_import_dir = home_dir.clone().join(".owl");
@@ -29,8 +41,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     let output_graph = reacto_uniprot_rules(&reacto_ont_graph)?;
 
-    let base_path: path::PathBuf = path::PathBuf::new().join("src/data");
-    let output_path: path::PathBuf = base_path.clone().join("reacto-uniprot-rules.nt");
+    let output_path: path::PathBuf = work_dir.clone().join("reacto-uniprot-rules.nt");
     cam_pipeline_rust::serialize_graph(&output_path, &output_graph)?;
 
     info!("Duration: {}", format_duration(start.elapsed()).to_string());

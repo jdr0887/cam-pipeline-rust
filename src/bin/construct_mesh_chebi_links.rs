@@ -12,18 +12,29 @@ use sophia::triple::Triple;
 use std::error;
 use std::path;
 use std::time::Instant;
+use structopt::StructOpt;
 
+#[derive(StructOpt, Debug)]
+#[structopt(name = "construct_mesh_chebi_links", about = "construct mesh CHEBI links")]
+struct Options {
+    #[structopt(short = "w", long = "work_dir", long_help = "work directory", required = true, parse(from_os_str))]
+    work_dir: path::PathBuf,
+}
 fn main() -> Result<(), Box<dyn error::Error>> {
     let start = Instant::now();
     env_logger::init();
 
-    let base_path: path::PathBuf = path::PathBuf::new().join("src/data");
-    let noctua_ontology_path: path::PathBuf = base_path.clone().join("noctua-reactome-ontology.nt");
+    let options = Options::from_args();
+    debug!("{:?}", options);
+
+    let work_dir: path::PathBuf = options.work_dir;
+
+    let noctua_ontology_path: path::PathBuf = work_dir.clone().join("noctua-reactome-ontology.nt");
     let noctua_ontology_graph = cam_pipeline_rust::deserialize_graph(&noctua_ontology_path)?;
 
     let output_graph = mesh_chebi_links(&noctua_ontology_graph)?;
 
-    let output_path: path::PathBuf = base_path.clone().join("mesh-chebi-links.nt");
+    let output_path: path::PathBuf = work_dir.clone().join("mesh-chebi-links.nt");
     cam_pipeline_rust::serialize_graph(&output_path, &output_graph)?;
 
     info!("Duration: {}", format_duration(start.elapsed()).to_string());

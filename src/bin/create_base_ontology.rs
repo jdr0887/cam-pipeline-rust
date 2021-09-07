@@ -15,15 +15,26 @@ use std::io;
 use std::io::Write;
 use std::path;
 use std::time::Instant;
+use structopt::StructOpt;
 
+#[derive(StructOpt, Debug)]
+#[structopt(name = "create_base_ontology", about = "create base ontology")]
+struct Options {
+    #[structopt(short = "w", long = "work_dir", long_help = "work directory", required = true, parse(from_os_str))]
+    work_dir: path::PathBuf,
+}
 fn main() -> Result<(), Box<dyn error::Error>> {
     let start = Instant::now();
     env_logger::init();
 
-    let base_path: path::PathBuf = path::PathBuf::new().join("src/data");
-    let ontologies_path: path::PathBuf = base_path.clone().join("ontologies.ttl");
+    let options = Options::from_args();
+    debug!("{:?}", options);
+
+    let work_dir: path::PathBuf = options.work_dir;
+
+    let ontologies_path: path::PathBuf = work_dir.clone().join("ontologies.ttl");
     let output_graph = base_ontology(&ontologies_path)?;
-    let output_path: path::PathBuf = base_path.clone().join("ontologies.nt");
+    let output_path: path::PathBuf = work_dir.clone().join("ontologies.nt");
     cam_pipeline_rust::serialize_graph(&output_path, &output_graph)?;
 
     info!("Duration: {}", format_duration(start.elapsed()).to_string());

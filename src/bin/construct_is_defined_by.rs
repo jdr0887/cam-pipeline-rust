@@ -12,18 +12,28 @@ use sophia::triple::Triple;
 use std::error;
 use std::path;
 use std::time::Instant;
+use structopt::StructOpt;
 
+#[derive(StructOpt, Debug)]
+#[structopt(name = "construct_is_defined_by", about = "construct is_defined_by")]
+struct Options {
+    #[structopt(short = "w", long = "work_dir", long_help = "work directory", required = true, parse(from_os_str))]
+    work_dir: path::PathBuf,
+}
 fn main() -> Result<(), Box<dyn error::Error>> {
     let start = Instant::now();
     env_logger::init();
 
-    let base_path: path::PathBuf = path::PathBuf::new().join("src/data");
-    let merged_ontologies_path: path::PathBuf = base_path.clone().join("merged-ontologies.nt");
+    let options = Options::from_args();
+    debug!("{:?}", options);
+
+    let work_dir: path::PathBuf = options.work_dir;
+    let merged_ontologies_path: path::PathBuf = work_dir.clone().join("merged-ontologies.nt");
     let merged_ontologies_graph = cam_pipeline_rust::deserialize_graph(&merged_ontologies_path)?;
 
     let output_graph = is_defined_by(&merged_ontologies_graph)?;
 
-    let output_path: path::PathBuf = base_path.clone().join("is-defined-by.nt");
+    let output_path: path::PathBuf = work_dir.clone().join("is-defined-by.nt");
     cam_pipeline_rust::serialize_graph(&output_path, &output_graph)?;
 
     info!("Duration: {}", format_duration(start.elapsed()).to_string());

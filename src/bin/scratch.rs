@@ -41,8 +41,11 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     //     debug!("sub: {:?}, obj: {:?}", sub, obj);
     // })?;
 
-    let ncbigene_ns = ns::Namespace::new("http://identifiers.org/ncbigene/")?;
-    let gene = ncbigene_ns.get("6658")?;
+    // let ncbigene_ns = ns::Namespace::new("http://identifiers.org/ncbigene/")?;
+    // let gene = ncbigene_ns.get("6658")?;
+
+    let ncbigene_ns = ns::Namespace::new("http://purl.obolibrary.org/obo/HP_")?;
+    let gene = ncbigene_ns.get("0002013")?;
 
     cam_reasoned_graph.triples().filter_triples(|t| t.s().value().to_string() == gene.to_string() || t.o().value().to_string() == gene.to_string()).for_each_triple(|t| {
         let obj = t.o().value().to_string();
