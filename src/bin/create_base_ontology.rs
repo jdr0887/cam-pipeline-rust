@@ -12,7 +12,7 @@ use sophia::triple::Triple;
 use std::error;
 use std::fs;
 use std::io;
-use std::io::Write;
+use std::io::{Read, Write};
 use std::path;
 use std::time::Instant;
 use structopt::StructOpt;
@@ -66,13 +66,16 @@ fn base_ontology(ontologies_path: &path::PathBuf) -> Result<FastGraph, Box<dyn e
         let owl_url = import.replace("http://", "").replace("<", "").replace(">", "");
         let owl_on_fs = owl_import_dir.clone().join(owl_url);
         if !owl_on_fs.exists() {
-            info!("importing: {}", &import);
+            info!("fetching: {}", &import);
             fs::create_dir_all(&owl_on_fs.parent().expect("could not get parent directory")).unwrap();
             let response = ureq::get(&import).call().unwrap();
-            let data = response.into_string().unwrap();
+            let len = response.header("Content-Length").and_then(|s| s.parse::<usize>().ok()).unwrap();
+            debug!("length: {}", len);
+            let mut data: Vec<u8> = Vec::with_capacity(len);
+            response.into_reader().take(2_000_000_000).read_to_end(&mut data).unwrap();
             let output = fs::File::create(&owl_on_fs).unwrap();
             let mut tmp_writer = io::BufWriter::new(output);
-            tmp_writer.write_all(data.as_bytes()).expect("Unable to write data");
+            tmp_writer.write_all(data.as_slice()).expect("Unable to write data");
         }
         let tmp_graph = cam_pipeline_rust::deserialize_graph(&owl_on_fs).unwrap();
         tmp_graph
