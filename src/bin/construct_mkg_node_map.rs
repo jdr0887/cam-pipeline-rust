@@ -1,22 +1,12 @@
 #[macro_use]
 extern crate log;
 
-use horned_owl::ontology;
-use horned_owl::ontology::indexed::ThreeIndexedOntology;
 use humantime::format_duration;
 use itertools::Itertools;
-use oxigraph::io::GraphFormat;
-use oxigraph::sparql::QueryResults;
-use oxigraph::MemoryStore;
 use rayon::prelude::*;
-use sophia::graph::inmem::FastGraph;
 use sophia::graph::Graph;
-use sophia::graph::MutableGraph;
 use sophia::ns;
-use sophia::parser;
-use sophia::serializer::TripleSerializer;
-use sophia::term;
-use sophia::term::{SimpleIri, TTerm, TermKind};
+use sophia::term::{TTerm, TermKind};
 use sophia::triple::stream::TripleSource;
 use sophia::triple::Triple;
 use std::collections::{HashMap, HashSet};
@@ -65,7 +55,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         .for_each_triple(|t| {
             let obj = t.o().value().to_string();
             let sub = t.s().value().to_string();
-            let found = prefixes_map.par_iter().filter(|(k, v)| sub.starts_with(*k)).map(|(k, v)| k).max_by(|a, b| a.len().cmp(&b.len()));
+            let found = prefixes_map.par_iter().filter(|(k, _v)| sub.starts_with(*k)).map(|(k, _v)| k).max_by(|a, b| a.len().cmp(&b.len()));
             match found {
                 Some(k) => {
                     let v = prefixes_map.get(k).unwrap();
@@ -106,6 +96,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     Ok(())
 }
 
+#[allow(dead_code)]
 fn get_store(cam_reasoned_path: &path::PathBuf) -> Result<oxigraph::RocksDbStore, Box<dyn error::Error>> {
     let cam_reasoned_db_path = path::PathBuf::new().join("/home/jdr0887/cam-db-reasoned");
     if cam_reasoned_db_path.exists() {

@@ -10,11 +10,14 @@ use std::path;
 use std::time::Instant;
 use structopt::StructOpt;
 
+// curl -L 'https://raw.githubusercontent.com/biolink/biolink-model/master/biolink-model.ttl' -o $@.tmp
+// sed -E 's/<https:\/\/w3id.org\/biolink\/vocab\/([^[:space:]][^[:space:]]*):/<http:\/\/purl.obolibrary.org\/obo\/\1_/g' $@.tmp >$@
+
 #[derive(StructOpt, Debug)]
 #[structopt(name = "fix_biolink_model", about = "fix biolink model")]
 struct Options {
-    #[structopt(short = "w", long = "work_dir", long_help = "work directory", required = true, parse(from_os_str))]
-    work_dir: path::PathBuf,
+    #[structopt(short = "f", long = "file", long_help = "biolink model file", required = true, parse(from_os_str))]
+    file: path::PathBuf,
 }
 fn main() -> Result<(), Box<dyn error::Error>> {
     let start = Instant::now();
@@ -23,14 +26,9 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let options = Options::from_args();
     debug!("{:?}", options);
 
-    let work_dir: path::PathBuf = options.work_dir;
-    let version: path::PathBuf = options.version;
+    let biolink_model_path: path::PathBuf = options.file;
 
-    // curl -L 'https://raw.githubusercontent.com/biolink/biolink-model/master/biolink-model.ttl' -o $@.tmp
-    // sed -E 's/<https:\/\/w3id.org\/biolink\/vocab\/([^[:space:]][^[:space:]]*):/<http:\/\/purl.obolibrary.org\/obo\/\1_/g' $@.tmp >$@
-
-    let biolink_model_path: path::PathBuf = work_dir.clone().join("biolink-model.ttl");
-    let data = response.into_string()?;
+    let data = fs::read_to_string(biolink_model_path.as_path())?;
 
     let prefix = "<https://w3id.org/biolink/vocab/";
     let prefix_replacement = "<http://purl.obolibrary.org/obo/";
@@ -52,15 +50,6 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         tmp_writer.write_all(format!("{}\n", line).as_bytes()).expect("Unable to write data");
     }
 
-    cam_pipeline_rust::get_biolink_model(&biolink_model_path, &version)?;
-
     info!("Duration: {}", format_duration(start.elapsed()).to_string());
     Ok(())
-}
-
-fn get_biolink_model(biolink_model_path: &path::PathBuf, version: String) -> Result<FastGraph, Box<dyn error::Error>> {
-    let response = ureq::get(format!("https://raw.githubusercontent.com/biolink/biolink-model/{}/biolink-model.ttl", version).as_str()).call()?;
-
-    let graph = deserialize_graph(&biolink_model_path)?;
-    Ok(graph)
 }

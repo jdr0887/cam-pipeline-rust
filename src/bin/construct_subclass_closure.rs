@@ -26,9 +26,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let work_dir: path::PathBuf = options.work_dir;
 
     let merged_ontologies_path = work_dir.clone().join("merged-ontologies.nt");
-    let merged_ontologies_graph = cam_pipeline_rust::deserialize_graph(&merged_ontologies_path)?;
-
-    let store = cam_pipeline_rust::load_graphs_into_memory_store(vec![merged_ontologies_graph])?;
+    let store = get_store(&merged_ontologies_path)?;
     let results = store.query(include_str!("../sparql/subclass-closure.rq"))?;
 
     let output_path: path::PathBuf = work_dir.clone().join("subclass-closure.nt");
@@ -38,4 +36,10 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     info!("Duration: {}", format_duration(start.elapsed()).to_string());
     Ok(())
+}
+
+fn get_store(merged_ontologies_path: &path::PathBuf) -> Result<oxigraph::MemoryStore, Box<dyn error::Error>> {
+    let merged_ontologies_graph = cam_pipeline_rust::deserialize_graph(&merged_ontologies_path)?;
+    let store = cam_pipeline_rust::load_graphs_into_memory_store(vec![merged_ontologies_graph])?;
+    Ok(store)
 }

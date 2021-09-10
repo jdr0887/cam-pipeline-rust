@@ -3,6 +3,7 @@ extern crate log;
 
 use humantime::format_duration;
 use oxigraph::io::GraphFormat;
+use oxigraph::model::GraphName;
 use std::error;
 use std::fs;
 use std::io;
@@ -11,10 +12,10 @@ use std::time::Instant;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
-#[structopt(name = "construct_subclass_closure", about = "construct subclass closure")]
+#[structopt(name = "delete_non_production_models", about = "delete non production models")]
 struct Options {
-    #[structopt(short = "w", long = "work_dir", long_help = "work directory", required = true, parse(from_os_str))]
-    work_dir: path::PathBuf,
+    #[structopt(short = "i", long = "input", long_help = "input", required = true, parse(from_os_str))]
+    input: path::PathBuf,
 }
 fn main() -> Result<(), Box<dyn error::Error>> {
     let start = Instant::now();
@@ -23,18 +24,14 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let options = Options::from_args();
     debug!("{:?}", options);
 
-    let work_dir: path::PathBuf = options.work_dir;
+    let ont_graph = cam_pipeline_rust::deserialize_graph(&options.input)?;
 
-    let merged_ontologies_path = work_dir.clone().join("merged-ontologies.nt");
-    let merged_ontologies_graph = cam_pipeline_rust::deserialize_graph(&merged_ontologies_path)?;
+    let store = cam_pipeline_rust::load_graphs_into_memory_store(vec![ont_graph])?;
+    store.update(include_str!("../sparql/delete-non-production-models.ru"))?;
 
-    let store = cam_pipeline_rust::load_graphs_into_memory_store(vec![merged_ontologies_graph])?;
-    let results = store.query(include_str!("../sparql/subclass-closure.rq"))?;
-
-    let output_path: path::PathBuf = work_dir.clone().join("subclass-closure.nt");
-    let output_file = fs::File::create(&output_path)?;
+    let output_file = fs::File::create(&options.input)?;
     let mut writer = io::BufWriter::new(output_file);
-    results.write_graph(&mut writer, GraphFormat::NTriples)?;
+    store.dump_graph(&mut writer, GraphFormat::NTriples, &GraphName::DefaultGraph)?;
 
     info!("Duration: {}", format_duration(start.elapsed()).to_string());
     Ok(())

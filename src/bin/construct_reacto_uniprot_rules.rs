@@ -18,8 +18,8 @@ use structopt::StructOpt;
 #[derive(StructOpt, Debug)]
 #[structopt(name = "construct_reacto_uniprot_rules", about = "construct REACTO UNIPROT rules")]
 struct Options {
-    #[structopt(short = "w", long = "work_dir", long_help = "work directory", required = true, parse(from_os_str))]
-    work_dir: path::PathBuf,
+    #[structopt(short = "o", long = "output", long_help = "output", required = true, parse(from_os_str))]
+    output: path::PathBuf,
 }
 fn main() -> Result<(), Box<dyn error::Error>> {
     let start = Instant::now();
@@ -27,8 +27,6 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     let options = Options::from_args();
     debug!("{:?}", options);
-
-    let work_dir: path::PathBuf = options.work_dir;
 
     let home_dir = dirs::home_dir().unwrap();
     let owl_import_dir = home_dir.clone().join(".owl");
@@ -41,8 +39,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     let output_graph = reacto_uniprot_rules(&reacto_ont_graph)?;
 
-    let output_path: path::PathBuf = work_dir.clone().join("reacto-uniprot-rules.nt");
-    cam_pipeline_rust::serialize_graph(&output_path, &output_graph)?;
+    cam_pipeline_rust::serialize_graph(&options.output, &output_graph)?;
 
     info!("Duration: {}", format_duration(start.elapsed()).to_string());
     Ok(())

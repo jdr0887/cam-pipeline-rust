@@ -10,10 +10,9 @@ use sophia::graph::inmem::FastGraph;
 use sophia::graph::Graph;
 use sophia::graph::MutableGraph;
 use sophia::ns;
-use sophia::parser;
 use sophia::serializer::TripleSerializer;
 use sophia::term;
-use sophia::term::{TTerm, TermKind};
+use sophia::term::TTerm;
 use sophia::triple::stream::TripleSource;
 use sophia::triple::Triple;
 use std::collections::HashMap;
@@ -21,7 +20,6 @@ use std::error;
 use std::ffi::OsStr;
 use std::fs;
 use std::io;
-use std::io::Write;
 use std::path;
 
 lazy_static! {
@@ -58,9 +56,9 @@ pub fn deserialize_graph(input_path: &path::PathBuf) -> Result<FastGraph, Box<dy
     info!("reading: {}", input_path.to_string_lossy());
     let reader = io::BufReader::new(input);
     let graph: FastGraph = match input_path.extension().and_then(OsStr::to_str) {
-        Some("ttl") => parser::turtle::parse_bufread(reader).collect_triples().unwrap(),
-        Some("nt") => parser::nt::parse_bufread(reader).collect_triples().unwrap(),
-        Some("xml") | Some("rdf") | Some("owl") => parser::xml::parse_bufread(reader).collect_triples().unwrap(),
+        Some("ttl") => sophia::parser::turtle::parse_bufread(reader).collect_triples().unwrap(),
+        Some("nt") => sophia::parser::nt::parse_bufread(reader).collect_triples().unwrap(),
+        Some("xml") | Some("rdf") | Some("owl") => sophia::parser::xml::parse_bufread(reader).collect_triples().unwrap(),
         _ => panic!("invalid extension"),
     };
     Ok(graph)
@@ -95,40 +93,8 @@ pub fn insert_terms_into_graph(graph: &mut FastGraph, files: &Vec<path::PathBuf>
     Ok(())
 }
 
-// curl -L 'https://raw.githubusercontent.com/biolink/biolink-model/master/biolink-model.ttl' -o $@.tmp
-// sed -E 's/<https:\/\/w3id.org\/biolink\/vocab\/([^[:space:]][^[:space:]]*):/<http:\/\/purl.obolibrary.org\/obo\/\1_/g' $@.tmp >$@
-pub fn get_biolink_model(biolink_model_path: &path::PathBuf) -> Result<FastGraph, Box<dyn error::Error>> {
-    if !biolink_model_path.exists() {
-        let response = ureq::get("https://raw.githubusercontent.com/biolink/biolink-model/master/biolink-model.ttl").call()?;
-        let data = response.into_string()?;
-
-        let prefix = "<https://w3id.org/biolink/vocab/";
-        let prefix_replacement = "<http://purl.obolibrary.org/obo/";
-
-        let mut lines: Vec<&str> = data.split("\n").collect();
-        let biolink_model_file_tmp = fs::File::create(&biolink_model_path)?;
-        let mut tmp_writer = io::BufWriter::new(biolink_model_file_tmp);
-        let re = regex::Regex::new(r"^[^<https://w3id.org/biolink/vocab/logical_interpretation_enum>].+<https://w3id.org/biolink/vocab/(.+:.+)>")?;
-        // let re = regex::Regex::new(r"<https://w3id.org/biolink/vocab/[^[:space:]][^[:space:]]*):>")?;
-        for line in lines.iter_mut() {
-            let mut line = line.to_string();
-            if line.contains(prefix) && re.is_match(&line) {
-                let second_part = &re.captures(&line).unwrap()[1];
-                let fixed_second_part = &second_part.replacen(":", "_", 1);
-                let fixed_line = line.replace(second_part, fixed_second_part).replace(&prefix, &prefix_replacement);
-                //debug!("line: {}, fixed: {}", line, fixed_line);
-                line = fixed_line;
-            }
-            tmp_writer.write_all(format!("{}\n", line).as_bytes()).expect("Unable to write data");
-        }
-    }
-
-    let graph = deserialize_graph(&biolink_model_path)?;
-    Ok(graph)
-}
-
 pub fn load_graphs_into_memory_store(graphs: Vec<FastGraph>) -> Result<oxigraph::MemoryStore, Box<dyn error::Error>> {
-    info!("getting store");
+    debug!("getting store");
     let store = oxigraph::MemoryStore::new();
 
     for graph in graphs.iter() {
@@ -183,7 +149,7 @@ pub fn load_graphs_into_memory_store(graphs: Vec<FastGraph>) -> Result<oxigraph:
 }
 
 pub fn load_graphs_into_rocksdb_store(db_path: &path::PathBuf, graphs: Vec<FastGraph>) -> Result<oxigraph::RocksDbStore, Box<dyn error::Error>> {
-    info!("getting store");
+    debug!("getting store");
     let store = oxigraph::RocksDbStore::open(db_path)?;
 
     for graph in graphs.iter() {

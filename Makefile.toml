@@ -3,6 +3,8 @@ CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
 RUST_LOG = "info"
 #RUST_LOG = "debug"
 PIPELINE_WORK_DIR = "src/data"
+ROBOT_JAVA_ARGS = "-Xmx12g -Xms12g"
+BIOLINK_MODEL_VERSION = "2.1.0"
 
 # [tasks.default]
 # clear = true
@@ -18,83 +20,155 @@ args = ["build", "--release"]
 [tasks.reset]
 description = "reset"
 script = [
-    'find ${PIPELINE_WORK_DIR} -type f ! -name "biolink-local.ttl" ! -name "chebi_mesh.tsv" ! -name "ontologies.ttl" ! -name "ubergraph-axioms.ttl" ! -name "uniprot-to-ncbi-rules.ttl" ! -name "uniprot-to-ncbi.txt" -exec rm {} +'
+    'find ${PIPELINE_WORK_DIR} -type f ! -name "prefixes.csv" ! -name "biolink-local.ttl" ! -name "chebi_mesh.tsv" ! -name "ontologies.ttl" ! -name "ubergraph-axioms.ttl" ! -name "uniprot-to-ncbi-rules.ttl" ! -name "uniprot-to-ncbi.txt" -exec rm {} +'
 ]
 
 [tasks.create_base_ontology]
 condition = { files_not_exist = ["${PIPELINE_WORK_DIR}/ontologies.nt"] }
 description = "create base ontology"
 command = "target/release/create_base_ontology"
+args = ["-i", "${PIPELINE_WORK_DIR}/ontologies.ttl", "-o", "${PIPELINE_WORK_DIR}/ontologies.nt"]
 
-[tasks.create_noctua_reactome_ontology]
-condition = { files_not_exist = ["${PIPELINE_WORK_DIR}/noctua-reactome-ontology.nt"] }
-description = "create noctua reactome ontology"
-command = "target/release/create_noctua_reactome_ontology -w ${PIPELINE_WORK_DIR}"
+[tasks.create_noctua_models]
+condition = { files_not_exist = ["${PIPELINE_WORK_DIR}/noctua-models.nt"] }
+description = "create noctua models"
+command = "target/release/create_noctua_models"
+args = ["-o", "${PIPELINE_WORK_DIR}/noctua-models.nt"]
+
+[tasks.delete_non_production_models]
+description = "delete non-production models from noctua reactome ontology"
+command = "target/release/delete_non_production_models"
+args = ["-i", "${PIPELINE_WORK_DIR}/noctua-models.nt"]
+dependencies = ["create_noctua_models"]
 
 [tasks.prep]
-run_task = { name = ["create_base_ontology", "create_noctua_reactome_ontology"], parallel = true }
+run_task = { name = ["create_base_ontology", "delete_non_production_models"], parallel = true }
 dependencies = ["build"]
 
-[tasks.get-noctua-reactome-ctd-models-xml-file]
+[tasks.get-ctd-xml-file]
 condition = { files_not_exist = ["${PIPELINE_WORK_DIR}/CTD_chem_gene_ixns_structured.xml"] }
 script = [
-    "curl -L -O 'http://ctdbase.org/reports/CTD_chem_gene_ixns_structured.xml.gz'",
-    "gunzip CTD_chem_gene_ixns_structured.xml.gz",
+    "curl -L 'http://ctdbase.org/reports/CTD_chem_gene_ixns_structured.xml.gz' -o ${PIPELINE_WORK_DIR}/CTD_chem_gene_ixns_structured.xml.gz",
+    "gunzip ${PIPELINE_WORK_DIR}/CTD_chem_gene_ixns_structured.xml.gz",
 ]
+
+[tasks.create-ctd-ttl-files]
+script = [
+    "if [ -e ${PIPELINE_WORK_DIR}/tmp ]; then rm -fr ${PIPELINE_WORK_DIR}/tmp; fi",
+    "ctd-to-owl -i ${PIPELINE_WORK_DIR}/CTD_chem_gene_ixns_structured.xml -o ${PIPELINE_WORK_DIR}/tmp -c ${PIPELINE_WORK_DIR}/chebi_mesh.tsv",
+    "ls ${PIPELINE_WORK_DIR}/tmp/*.owx | parallel -j 3 \"robot convert -i {} -o {.}.ttl\""
+]
+dependencies = ["get-ctd-xml-file"]
 
 [tasks.create-noctua-reactome-ctd-models]
+condition = { files_not_exist = ["${PIPELINE_WORK_DIR}/noctua-reactome-ctd-models.nt"] }
+command = "target/release/create-noctua-reactome-ctd-models"
+args = ["-i", "${PIPELINE_WORK_DIR}/noctua-models.nt", "-t", "${PIPELINE_WORK_DIR}/tmp", "-o", "${PIPELINE_WORK_DIR}/noctua-reactome-ctd-models.nt"]
+dependencies = ["prep", "create-ctd-ttl-files"]
+
+[tasks.get_biolink_model]
 script = [
-    #"/home/jdr0887/workspace/github/balhoff/ctd-to-owl/target/universal/stage/bin/ctd-to-owl CTD_chem_gene_ixns_structured.xml src/data/noctua-reactome-ctd-models.jnl blazegraph.properties chebi_mesh.tsv"
-    "ctd-to-owl -i ${PIPELINE_WORK_DIR}/CTD_chem_gene_ixns_structured.xml -o ${PIPELINE_WORK_DIR}/CTD_chem_gene_ixns_structured.owx"
+    "curl -L \"https://raw.githubusercontent.com/biolink/biolink-model/${BIOLINK_MODEL_VERSION}/biolink-model.ttl\" -o ${PIPELINE_WORK_DIR}/biolink-model.ttl",
 ]
-dependencies = ["prep", "get-noctua-reactome-ctd-models-xml-file"]
+
+[tasks.fix_biolink_model]
+description = "fix biolink model"
+command = "target/release/fix_biolink_model"
+args = ["-f", "${PIPELINE_WORK_DIR}/biolink-model.ttl"]
+dependencies = ["get_biolink_model"]
+
+[tasks.biolink_model]
+condition = { files_not_exist = ["${PIPELINE_WORK_DIR}/biolink-model.ttl"] }
+run_task = { name = ["fix_biolink_model"] }
 
 [tasks.construct_mesh_chebi_links]
+condition = { files_not_exist = ["${PIPELINE_WORK_DIR}/mesh-chebi-links.nt"] }
 description = "construct mesh chebi links"
 command = "target/release/construct_mesh_chebi_links"
+args = ["-i", "${PIPELINE_WORK_DIR}/noctua-reactome-ctd-models.nt", "-o", "${PIPELINE_WORK_DIR}/mesh-chebi-links.nt"]
 
 [tasks.construct_protein_subclasses]
+condition = { files_not_exist = ["${PIPELINE_WORK_DIR}/protein-subclasses.nt"] }
 description = "construct protein subclasses"
 command = "target/release/construct_protein_subclasses"
+args = ["-i", "${PIPELINE_WORK_DIR}/noctua-reactome-ctd-models.nt", "-o", "${PIPELINE_WORK_DIR}/protein-subclasses.nt"]
 
 [tasks.construct_reacto_uniprot_rules]
+condition = { files_not_exist = ["${PIPELINE_WORK_DIR}/reacto-uniprot-rules.nt"] }
 description = "construct reacto uniprot rules"
 command = "target/release/construct_reacto_uniprot_rules"
+args = ["-o", "${PIPELINE_WORK_DIR}/reacto-uniprot-rules.nt"]
 
 [tasks.construct_ncbi_gene_classes]
 condition = { files_exist = ["${PIPELINE_WORK_DIR}/uniprot-to-ncbi-rules.ttl"] }
 description = "construct ncbi gene classes"
 command = "target/release/construct_ncbi_gene_classes"
+args = ["-i", "${PIPELINE_WORK_DIR}/uniprot-to-ncbi-rules.ttl", "-o", "${PIPELINE_WORK_DIR}/ncbi-gene-classes.nt"]
 
 [tasks.construct_biolink_class_hierarchy]
 description = "construct biolink class hierarchy"
 command = "target/release/construct_biolink_class_hierarchy"
+args = ["-i", "${PIPELINE_WORK_DIR}/biolink-model.ttl", "-o", "${PIPELINE_WORK_DIR}/biolink-class-hierarchy.nt"]
+dependencies = ["biolink_model"]
 
 [tasks.construct_ont_biolink_subclasses]
+condition = { files_exist = ["${PIPELINE_WORK_DIR}/biolink-local.ttl"] }
 description = "construct ont biolink subclasses"
 command = "target/release/construct_ont_biolink_subclasses"
+args = ["-i", "${PIPELINE_WORK_DIR}/biolink-local.ttl", "-b", "${PIPELINE_WORK_DIR}/biolink-model.ttl", "-o", "${PIPELINE_WORK_DIR}/ont-biolink-subclasses.nt"]
+dependencies = ["biolink_model"]
 
 [tasks.construct_slot_mappings]
+condition = { files_exist = ["${PIPELINE_WORK_DIR}/biolink-local.ttl"] }
 description = "construct slot mappings"
 command = "target/release/construct_slot_mappings"
-
-[tasks.get_biolink_model]
-description = "get biolink model"
-command = "target/release/get_biolink_model"
+args = ["-i", "${PIPELINE_WORK_DIR}/biolink-local.ttl", "-b", "${PIPELINE_WORK_DIR}/biolink-model.ttl", "-o", "${PIPELINE_WORK_DIR}/slot-mappings.nt"]
+dependencies = ["biolink_model"]
 
 [tasks.construct]
-run_task = { name = ["construct_mesh_chebi_links", "construct_protein_subclasses", "construct_reacto_uniprot_rules", "construct_ncbi_gene_classes", "construct_biolink_class_hierarchy", "construct_ont_biolink_subclasses", "construct_slot_mappings"], parallel = true }
-dependencies = ["prep", "get_biolink_model"]
+run_task = { name = ["construct_mesh_chebi_links",
+    "construct_protein_subclasses",
+    "construct_reacto_uniprot_rules",
+    "construct_ncbi_gene_classes",
+    "construct_biolink_class_hierarchy",
+    "construct_ont_biolink_subclasses",
+    "construct_slot_mappings"], parallel = true }
+dependencies = ["prep", "biolink_model"]
 
 [tasks.create_merged_ontologies]
+condition = { files_exist = ["${PIPELINE_WORK_DIR}/ontologies.nt",
+    "${PIPELINE_WORK_DIR}/noctua-reactome-ctd-models.nt",
+    "${PIPELINE_WORK_DIR}/ubergraph-axioms.ttl",
+    "${PIPELINE_WORK_DIR}/uniprot-to-ncbi-rules.ttl",
+    "${PIPELINE_WORK_DIR}/mesh-chebi-links.nt",
+    "${PIPELINE_WORK_DIR}/protein-subclasses.nt",
+    "${PIPELINE_WORK_DIR}/reacto-uniprot-rules.nt",
+    "${PIPELINE_WORK_DIR}/ncbi-gene-classes.nt",
+    "${PIPELINE_WORK_DIR}/ont-biolink-subclasses.nt",
+    "${PIPELINE_WORK_DIR}/slot-mappings.nt",
+    "${PIPELINE_WORK_DIR}/biolink-class-hierarchy.nt"], files_not_exist = ["${PIPELINE_WORK_DIR}/merged-ontologies.nt"] }
 description = "create merged ontologies"
 command = "target/release/create_merged_ontologies"
+args = ["-i", "${PIPELINE_WORK_DIR}/ontologies.nt",
+    "-i", "${PIPELINE_WORK_DIR}/noctua-reactome-ctd-models.nt",
+    "-i", "${PIPELINE_WORK_DIR}/ubergraph-axioms.ttl",
+    "-i", "${PIPELINE_WORK_DIR}/uniprot-to-ncbi-rules.ttl",
+    "-i", "${PIPELINE_WORK_DIR}/mesh-chebi-links.nt",
+    "-i", "${PIPELINE_WORK_DIR}/protein-subclasses.nt",
+    "-i", "${PIPELINE_WORK_DIR}/reacto-uniprot-rules.nt",
+    "-i", "${PIPELINE_WORK_DIR}/ncbi-gene-classes.nt",
+    "-i", "${PIPELINE_WORK_DIR}/ont-biolink-subclasses.nt",
+    "-i", "${PIPELINE_WORK_DIR}/slot-mappings.nt",
+    "-i", "${PIPELINE_WORK_DIR}/biolink-class-hierarchy.nt",
+    "-o", "${PIPELINE_WORK_DIR}/merged-ontologies.nt"]
 dependencies = ["construct"]
 
 [tasks.construct_is_defined_by]
 description = "construct is_defined_by"
 command = "target/release/construct_is_defined_by"
+args = ["-w", "${PIPELINE_WORK_DIR}"]
 
 [tasks.construct_subclass_closure]
 description = "construct subclass closure"
 command = "target/release/construct_subclass_closure"
+args = ["-w", "${PIPELINE_WORK_DIR}"]

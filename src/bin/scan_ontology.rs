@@ -1,35 +1,53 @@
 #[macro_use]
 extern crate log;
 
-use horned_owl::ontology;
-use horned_owl::ontology::indexed::ThreeIndexedOntology;
 use humantime::format_duration;
-use itertools::Itertools;
-use rayon::prelude::*;
-use sophia::graph::inmem::FastGraph;
 use sophia::graph::Graph;
-use sophia::graph::MutableGraph;
 use sophia::ns;
-use sophia::parser;
-use sophia::serializer::TripleSerializer;
-use sophia::term;
-use sophia::term::{SimpleIri, TTerm, TermKind};
+use sophia::term::TTerm;
 use sophia::triple::stream::TripleSource;
 use sophia::triple::Triple;
-use std::collections::{HashMap, HashSet};
 use std::error;
-use std::fs;
-use std::io;
-use std::io::Write;
 use std::path;
 use std::time::Instant;
+use structopt::StructOpt;
 
+#[derive(StructOpt, Debug)]
+#[structopt(name = "scan_ontology", about = "scan ontology")]
+struct Options {
+    #[structopt(short = "i", long = "input", long_help = "input", required = true, parse(from_os_str))]
+    input: path::PathBuf,
+}
 fn main() -> Result<(), Box<dyn error::Error>> {
     let start = Instant::now();
     env_logger::init();
 
-    let cam_reasoned_path = path::PathBuf::new().join("/home/jdr0887/cam-db-reasoned.ttl");
-    let cam_reasoned_graph = cam_pipeline_rust::deserialize_graph(&cam_reasoned_path)?;
+    let options = Options::from_args();
+    debug!("{:?}", options);
+
+    let graph = cam_pipeline_rust::deserialize_graph(&options.input)?;
+
+    // let metatype_ns = ns::Namespace::new("https://w3id.org/biolink/biolinkml/meta/types/")?;
+    let metatype_ns = ns::Namespace::new("https://w3id.org/linkml/")?;
+    let metatype_class_definition = metatype_ns.get("ClassDefinition")?;
+
+    graph.triples_with_po(&ns::rdf::type_, &metatype_class_definition).for_each_triple(|t| {
+        // graph.triples_with_o(&metatype_class_definition).for_each_triple(|t| {
+        let obj = t.o().value().to_string();
+        let pred = t.p().value().to_string();
+        let sub = t.s().value().to_string();
+        debug!("sub: {:?}, pred: {:?} obj: {:?}", sub, pred, obj);
+    })?;
+
+    // let ncbigene_ns = ns::Namespace::new("http://purl.obolibrary.org/obo/HP_")?;
+    // let gene = ncbigene_ns.get("0002013")?;
+    //
+    // graph.triples().filter_triples(|t| t.s().value().to_string() == gene.to_string() || t.o().value().to_string() == gene.to_string()).for_each_triple(|t| {
+    //     let obj = t.o().value().to_string();
+    //     let pred = t.p().value().to_string();
+    //     let sub = t.s().value().to_string();
+    //     debug!("sub: {:?}, pred: {:?} obj: {:?}", sub, pred, obj);
+    // })?;
 
     // let biolink_ns = ns::Namespace::new("https://w3id.org/biolink/vocab/")?;
     // let biolink_pathway = biolink_ns.get("Pathway")?;
@@ -43,16 +61,6 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     // let ncbigene_ns = ns::Namespace::new("http://identifiers.org/ncbigene/")?;
     // let gene = ncbigene_ns.get("6658")?;
-
-    let ncbigene_ns = ns::Namespace::new("http://purl.obolibrary.org/obo/HP_")?;
-    let gene = ncbigene_ns.get("0002013")?;
-
-    cam_reasoned_graph.triples().filter_triples(|t| t.s().value().to_string() == gene.to_string() || t.o().value().to_string() == gene.to_string()).for_each_triple(|t| {
-        let obj = t.o().value().to_string();
-        let pred = t.p().value().to_string();
-        let sub = t.s().value().to_string();
-        debug!("sub: {:?}, pred: {:?} obj: {:?}", sub, pred, obj);
-    })?;
 
     // let pubchem_compound_ns = ns::Namespace::new("http://identifiers.org/pubchem.compound/")?;
     // let pubchem_compound = pubchem_compound_ns.get("5291")?;

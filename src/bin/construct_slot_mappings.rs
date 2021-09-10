@@ -13,8 +13,14 @@ use structopt::StructOpt;
 #[derive(StructOpt, Debug)]
 #[structopt(name = "construct_slot_mappings", about = "construct slot mappings")]
 struct Options {
-    #[structopt(short = "w", long = "work_dir", long_help = "work directory", required = true, parse(from_os_str))]
-    work_dir: path::PathBuf,
+    #[structopt(short = "i", long = "input", long_help = "input", required = true, parse(from_os_str))]
+    input: path::PathBuf,
+
+    #[structopt(short = "b", long = "biolink_model", long_help = "biolink model", required = true, parse(from_os_str))]
+    biolink_model: path::PathBuf,
+
+    #[structopt(short = "o", long = "output", long_help = "output", required = true, parse(from_os_str))]
+    output: path::PathBuf,
 }
 fn main() -> Result<(), Box<dyn error::Error>> {
     let start = Instant::now();
@@ -23,16 +29,10 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let options = Options::from_args();
     debug!("{:?}", options);
 
-    let work_dir: path::PathBuf = options.work_dir;
+    let biolink_model_graph = cam_pipeline_rust::deserialize_graph(&options.biolink_model)?;
+    let biolink_local_graph = cam_pipeline_rust::deserialize_graph(&options.input)?;
 
-    let biolink_local_path: path::PathBuf = work_dir.clone().join("biolink-local.ttl");
-    let biolink_local_graph = cam_pipeline_rust::deserialize_graph(&biolink_local_path)?;
-
-    let biolink_model_path: path::PathBuf = work_dir.clone().join("biolink-model.ttl");
-    let biolink_model_graph = cam_pipeline_rust::get_biolink_model(&biolink_model_path)?;
-
-    let output_path: path::PathBuf = work_dir.clone().join("slot-mappings.nt");
-    let output_file = fs::File::create(&output_path)?;
+    let output_file = fs::File::create(&options.output)?;
     let mut writer = io::BufWriter::new(output_file);
     let store = cam_pipeline_rust::load_graphs_into_memory_store(vec![biolink_model_graph, biolink_local_graph])?;
     let results = store.query(include_str!("../../src/sparql/construct-slot-mappings.rq"))?;

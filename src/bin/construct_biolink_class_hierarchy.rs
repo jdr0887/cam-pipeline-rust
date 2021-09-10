@@ -14,8 +14,11 @@ use oxigraph::io::GraphFormat;
 #[derive(StructOpt, Debug)]
 #[structopt(name = "construct_biolink_class_hierarchy", about = "construct biolink class hierarchy")]
 struct Options {
-    #[structopt(short = "w", long = "work_dir", long_help = "work directory", required = true, parse(from_os_str))]
-    work_dir: path::PathBuf,
+    #[structopt(short = "i", long = "input", long_help = "input", required = true, parse(from_os_str))]
+    input: path::PathBuf,
+
+    #[structopt(short = "o", long = "output", long_help = "output", required = true, parse(from_os_str))]
+    output: path::PathBuf,
 }
 fn main() -> Result<(), Box<dyn error::Error>> {
     let start = Instant::now();
@@ -24,13 +27,8 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let options = Options::from_args();
     debug!("{:?}", options);
 
-    let work_dir: path::PathBuf = options.work_dir;
-
-    let biolink_model_path: path::PathBuf = work_dir.clone().join("biolink-model.ttl");
-    let biolink_model_graph = cam_pipeline_rust::get_biolink_model(&biolink_model_path)?;
-
-    let output_path: path::PathBuf = work_dir.clone().join("biolink-class-hierarchy.nt");
-    let output_file = fs::File::create(&output_path)?;
+    let biolink_model_graph = cam_pipeline_rust::deserialize_graph(&options.input)?;
+    let output_file = fs::File::create(&options.output)?;
     let mut writer = io::BufWriter::new(output_file);
     let store = cam_pipeline_rust::load_graphs_into_memory_store(vec![biolink_model_graph])?;
     let results = store.query(include_str!("../sparql/construct-biolink-class-hierachy.rq"))?;
