@@ -86,12 +86,14 @@ condition = { files_not_exist = ["${PIPELINE_WORK_DIR}/mesh-chebi-links.nt"] }
 description = "construct mesh chebi links"
 command = "target/release/construct_mesh_chebi_links"
 args = ["-i", "${PIPELINE_WORK_DIR}/noctua-reactome-ctd-models.nt", "-o", "${PIPELINE_WORK_DIR}/mesh-chebi-links.nt"]
+dependencies = ["create-noctua-reactome-ctd-models"]
 
 [tasks.construct_protein_subclasses]
 condition = { files_not_exist = ["${PIPELINE_WORK_DIR}/protein-subclasses.nt"] }
 description = "construct protein subclasses"
 command = "target/release/construct_protein_subclasses"
 args = ["-i", "${PIPELINE_WORK_DIR}/noctua-reactome-ctd-models.nt", "-o", "${PIPELINE_WORK_DIR}/protein-subclasses.nt"]
+dependencies = ["create-noctua-reactome-ctd-models"]
 
 [tasks.construct_reacto_uniprot_rules]
 condition = { files_not_exist = ["${PIPELINE_WORK_DIR}/reacto-uniprot-rules.nt"] }
@@ -133,7 +135,7 @@ run_task = { name = ["construct_mesh_chebi_links",
     "construct_biolink_class_hierarchy",
     "construct_ont_biolink_subclasses",
     "construct_slot_mappings"], parallel = true }
-dependencies = ["prep", "biolink_model"]
+dependencies = ["create-noctua-reactome-ctd-models", "biolink_model"]
 
 [tasks.create_merged_ontologies]
 condition = { files_exist = ["${PIPELINE_WORK_DIR}/ontologies.nt",
