@@ -3,7 +3,6 @@ extern crate log;
 
 use humantime::format_duration;
 use sophia::graph::inmem::FastGraph;
-use sophia::term::TTerm;
 use std::error;
 use std::fs;
 use std::path;
@@ -13,8 +12,8 @@ use structopt::StructOpt;
 #[derive(StructOpt, Debug)]
 #[structopt(name = "create_noctua_reactome_ontology", about = "create noctua reactome ontology")]
 struct Options {
-    #[structopt(short = "w", long = "work_dir", long_help = "work directory", required = true, parse(from_os_str))]
-    work_dir: path::PathBuf,
+    #[structopt(short = "o", long = "output", long_help = "output", required = true, parse(from_os_str))]
+    output: path::PathBuf,
 }
 fn main() -> Result<(), Box<dyn error::Error>> {
     let start = Instant::now();
@@ -23,13 +22,11 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let options = Options::from_args();
     debug!("{:?}", options);
 
-    let work_dir: path::PathBuf = options.work_dir;
-
-    let noctua_models_path: path::PathBuf = path::PathBuf::new().join("./noctua-models/models");
+    let noctua_models_path: path::PathBuf = path::PathBuf::new().join("noctua-models/models");
 
     let output_graph = noctua_reactome_ontology(&noctua_models_path)?;
 
-    let output_path: path::PathBuf = work_dir.clone().join("noctua-reactome-ontology.nt");
+    let output_path: path::PathBuf = options.output;
     cam_pipeline_rust::serialize_graph(&output_path, &output_graph)?;
 
     info!("Duration: {}", format_duration(start.elapsed()).to_string());
