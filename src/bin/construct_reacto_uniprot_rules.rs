@@ -34,7 +34,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         fs::create_dir_all(&owl_import_dir)?;
     }
 
-    let reacto_ont_path: path::PathBuf = owl_import_dir.clone().join("purl.obolibrary.org/obo/go/extensions/reacto.owl");
+    let reacto_ont_path: path::PathBuf = owl_import_dir.clone().join("purl.obolibrary.org/obo/go/snapshot/extensions/reacto.owl");
     let reacto_ont_graph = cam_pipeline_rust::deserialize_graph(&reacto_ont_path)?;
 
     let output_graph = reacto_uniprot_rules(&reacto_ont_graph)?;
