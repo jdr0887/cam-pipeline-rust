@@ -4,7 +4,8 @@ extern crate log;
 use std::error;
 use std::fs;
 use std::io;
-use std::io::BufRead;
+use std::io::{BufRead, Error};
+use std::ops::Deref;
 use std::path;
 use std::time;
 
@@ -219,8 +220,21 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     let mut runtime = Crepe::new();
 
-    let data = convert_to_rdf(&options.input)?;
-    runtime.extend(data.iter().map(|(a, b, c)| crate::RDF(a.as_str(), b.as_str(), c.as_str())));
+    let input_file = fs::File::open(&options.input)?;
+    let br = io::BufReader::new(input_file);
+
+    // let mut data = Vec::new();
+
+    let data = br
+        .lines()
+        .map(|l| l.unwrap())
+        .map(|s| {
+            let split = s.split(' ').map(|a| a.to_string()).collect_vec();
+            (split[0].clone(), split[1].clone(), split[2].clone())
+        })
+        .collect_vec();
+
+    runtime.extend(data.iter().map(|(a, b, c)| crate::RDF(a, b, c)));
 
     let (reachables, chainables) = runtime.run();
     for Reachable(x, y, z) in reachables {
@@ -228,21 +242,4 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     }
     info!("Duration: {}", format_duration(start.elapsed()).to_string());
     Ok(())
-}
-
-fn convert_to_rdf<'a>(input_path: &path::Path) -> Result<Vec<(String, String, String)>, Box<dyn error::Error>> {
-    let input_file = fs::File::open(input_path)?;
-    let br = io::BufReader::new(input_file);
-
-    let mut data = Vec::new();
-
-    for line in br.lines() {
-        let unwrapped = line.unwrap();
-        if !unwrapped.contains("\"") {
-            let split = unwrapped.split_whitespace().collect_vec();
-            data.push((split[0].to_string(), split[1].to_string(), split[2].to_string()));
-        }
-    }
-
-    Ok(data)
 }
