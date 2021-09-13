@@ -218,79 +218,14 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let options = Options::from_args();
     debug!("{:?}", options);
 
-    let mut ret = Vec::new();
     let input = fs::read_to_string(&options.input)?;
-    for line in input.lines() {
-        let split: Vec<&str> = line.split(' ').collect();
-        ret.push(crate::RDF(split[0], split[1], split[2]));
-    }
-
     let mut runtime = Crepe::new();
-    runtime.extend(ret);
+    runtime.extend(input.lines().into_iter().map(|line| line.split(' ').collect()).map(|split: Vec<&str>| crate::RDF(split[0], split[1], split[2])));
 
-    // let input_file = fs::File::open(&options.input)?;
-    // let br = io::BufReader::new(input_file);
-
-    // let data = br
-    //     .lines()
-    //     .map(|l| l.unwrap())
-    //     .map(|s| s.split(' ').collect_vec())
-    //     .map(|split| {
-    //         let subject = split[0];
-    //         let predicate = split[1];
-    //         let object = split[2];
-    //         (subject, predicate, object)
-    //     })
-    //     .map(|(a, b, c)| crate::RDF(a, b, c))
-    //     .collect_vec();
-
-    //let asdf: Vec<crate::RDF> = data.iter().map(|(a, b, c)| crate::RDF(a, b, c)).collect_vec();
-
-    // let raw_data = get_data(&options.input)?;
-    // let data: Vec<crate::RDF> = convert_to_rdf(raw_data)?;
-
-    // let mut runtime = Crepe::new();
-    // runtime.extend(data.iter().map(|(a, b, c)| crate::RDF(a, b, c)));
-
-    // let (reachables, chainables) = runtime.run();
-    // for Reachable(x, y, z) in reachables {
-    //     info!("{} {} {}", x, y, z);
-    // }
+    let (reachables, chainables) = runtime.run();
+    for Reachable(x, y, z) in reachables {
+        info!("{} {} {}", x, y, z);
+    }
     info!("Duration: {}", format_duration(start.elapsed()).to_string());
     Ok(())
 }
-
-// fn get_data(input_path: &path::PathBuf) -> Result<Vec<crate::RDF<'_>>, Box<dyn error::Error>> {
-//     let input_file = fs::File::open(input_path)?;
-//     let br = io::BufReader::new(input_file);
-//
-//     let data = br
-//         .lines()
-//         .map(|l| l.unwrap())
-//         .map(|s| {
-//             let split = s.split(' ').map(|a| a.to_string()).collect_vec();
-//             let subject = split[0].clone();
-//             let predicate = split[1].clone();
-//             let object = split[2].clone();
-//             (subject, predicate, object)
-//         })
-//         .collect_vec();
-//
-//     let asdf = data.iter().map(|(a, b, c)| crate::RDF(a, b, c)).collect_vec();
-//     Ok(asdf)
-// }
-
-// fn get_data(input_path: &path::PathBuf) -> Result<Vec<crate::RDF<'_>>, Box<dyn error::Error>> {
-//     let mut ret = Vec::new();
-//     let input = fs::read_to_string(input_path)?;
-//     for line in input.lines() {
-//         let split: Vec<&str> = line.split(' ').collect();
-//         ret.push(crate::RDF(split[0], split[1], split[2]));
-//     }
-//     Ok(ret)
-// }
-
-// fn convert_to_rdf(data: Vec<(String, String, String)>) -> Result<Vec<crate::RDF<'static>>, Box<dyn error::Error>> {
-//     let ret = data.iter().map(|(a, b, c)| crate::RDF(a, b, c)).collect_vec();
-//     Ok(ret)
-// }
