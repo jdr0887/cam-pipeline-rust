@@ -165,6 +165,19 @@ args = ["-i", "${PIPELINE_WORK_DIR}/ontologies.nt",
     "-o", "${PIPELINE_WORK_DIR}/merged-ontologies.nt"]
 dependencies = ["construct"]
 
+[tasks.sort_merged_ontologies]
+condition = { files_exist = ["${PIPELINE_WORK_DIR}/merged-ontologies.nt"], files_not_exist = ["${PIPELINE_WORK_DIR}/merged-ontologies-sorted.nt"] }
+description = "sort merged ontologies"
+command = "sort"
+args = ["--parallel=10", "-uo", "${PIPELINE_WORK_DIR}/merged-ontologies-sorted.nt", "${PIPELINE_WORK_DIR}/merged-ontologies.nt"]
+dependencies = ["create_merged_ontologies"]
+
+[tasks.reasoner]
+description = "reasoner"
+command = "target/release/reasoner"
+args = ["-i", "${PIPELINE_WORK_DIR}/merged-ontologies.nt"]
+dependencies = ["sort_merged_ontologies"]
+
 [tasks.construct_is_defined_by]
 description = "construct is_defined_by"
 command = "target/release/construct_is_defined_by"
