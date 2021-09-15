@@ -230,7 +230,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let mut runtime = Crepe::new();
     runtime.extend(data);
     debug!("data added to crepe");
-    let (reachables,) = runtime.run();
+    let (reachables, chainables) = runtime.run();
     debug!("finished runtime.run()");
     for Reachable(x, y, z) in reachables {
         info!("{} {} {}", x, y, z);
