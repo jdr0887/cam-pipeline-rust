@@ -22,13 +22,13 @@ crepe! {
     @output
     struct Reachable<'a>(&'a str, &'a str, &'a str);
 
-    @input
-    struct Chain<'a>(&'a str, &'a str, &'a str, &'a str);
-
-    @output
-    struct Chainable<'a>(&'a str, &'a str, &'a str, &'a str);
-
-    struct ListContains<'a>(&'a str, &'a str);
+    // @input
+    // struct Chain<'a>(&'a str, &'a str, &'a str, &'a str);
+    //
+    // @output
+    // struct Chainable<'a>(&'a str, &'a str, &'a str, &'a str);
+    //
+    // struct ListContains<'a>(&'a str, &'a str);
 
     //prp-dom
     // rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c) :- rdf(?p, "<http://www.w3.org/2000/01/rdf-schema#domain>", ?c), rdf(?x, ?p, _).
@@ -226,10 +226,12 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         .map(|line| line.split(' ').collect())
         .map(|split: Vec<&str>| crate::RDF(split[0], split[1], split[2]))
         .collect_vec();
+    debug!("done reading");
     let mut runtime = Crepe::new();
     runtime.extend(data);
-
-    let (reachables, chainables) = runtime.run();
+    debug!("data added to crepe");
+    let (reachables,) = runtime.run();
+    debug!("finished runtime.run()");
     for Reachable(x, y, z) in reachables {
         info!("{} {} {}", x, y, z);
     }
