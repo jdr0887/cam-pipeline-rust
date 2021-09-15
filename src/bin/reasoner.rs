@@ -78,17 +78,17 @@ crepe! {
 
     //prp-eqp1
     // rdf(?x, ?p2, ?y) :- rdf(?p1, "<http://www.w3.org/2002/07/owl#equivalentProperty>", ?p2), rdf(?x, ?p1, ?y).
-    Reachable(x, p2, y) <- RDF(p1, "<http://www.w3.org/2002/07/owl#equivalentProperty>", p2), RDF(x, p1, y);
+    // Reachable(x, p2, y) <- RDF(p1, "<http://www.w3.org/2002/07/owl#equivalentProperty>", p2), RDF(x, p1, y);
 
     //prp-eqp2
     // rdf(?x, ?p1, ?y) :- rdf(?p1, "<http://www.w3.org/2002/07/owl#equivalentProperty>", ?p2), rdf(?x, ?p2, ?y).
-    Reachable(x, p1, y) <- RDF(p1, "<http://www.w3.org/2002/07/owl#equivalentProperty>", p2), RDF(x, p2, y);
+    // Reachable(x, p1, y) <- RDF(p1, "<http://www.w3.org/2002/07/owl#equivalentProperty>", p2), RDF(x, p2, y);
 
     //prp-pdw
     // rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>"),
     // rdf(?y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") :- rdf(?p1, "<http://www.w3.org/2002/07/owl#propertyDisjointWith>", ?p2), rdf(?x, ?p1, ?y), rdf(?x, ?p2, ?y).
-    Reachable(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(p1, "<http://www.w3.org/2002/07/owl#propertyDisjointWith>", p2), RDF(x, p1, y), RDF(x, p2, y);
-    Reachable(y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(p1, "<http://www.w3.org/2002/07/owl#propertyDisjointWith>", p2), RDF(x, p1, y), RDF(x, p2, y);
+    // Reachable(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(p1, "<http://www.w3.org/2002/07/owl#propertyDisjointWith>", p2), RDF(x, p1, y), RDF(x, p2, y);
+    // Reachable(y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(p1, "<http://www.w3.org/2002/07/owl#propertyDisjointWith>", p2), RDF(x, p1, y), RDF(x, p2, y);
 
     //prp-adp
     // rdf(?u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>"),
@@ -97,11 +97,11 @@ crepe! {
 
     //prp-inv1
     //rdf(?y, ?p2, ?x) :- rdf(?p1, "<http://www.w3.org/2002/07/owl#inverseOf>", ?p2), rdf(?x, ?p1, ?y).
-    Reachable(y, p2, x) <- RDF(p1, "<http://www.w3.org/2002/07/owl#inverseOf>", p2), RDF(x, p1, y);
+    // Reachable(y, p2, x) <- RDF(p1, "<http://www.w3.org/2002/07/owl#inverseOf>", p2), RDF(x, p1, y);
 
     //prp-inv2
     //rdf(?y, ?p1, ?x) :- rdf(?p1, "<http://www.w3.org/2002/07/owl#inverseOf>", ?p2), rdf(?x, ?p2, ?y).
-    Reachable(y, p1, x) <- RDF(p1, "<http://www.w3.org/2002/07/owl#inverseOf>", p2), RDF(x, p2, y);
+    // Reachable(y, p1, x) <- RDF(p1, "<http://www.w3.org/2002/07/owl#inverseOf>", p2), RDF(x, p2, y);
 
     //prp-key
     //TODO
@@ -109,20 +109,20 @@ crepe! {
     //prp-npa1
     // rdf(?i1, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>"),
     // rdf(?i2, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") :- rdf(?x, "<http://www.w3.org/2002/07/owl#sourceIndividual>", ?i1), rdf(?x, "<http://www.w3.org/2002/07/owl#assertionProperty>", ?p), rdf(?x, "<http://www.w3.org/2002/07/owl#targetIndividual>", ?i2), rdf(?i1, ?p, ?i2).
-    Reachable(i1, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(x, "<http://www.w3.org/2002/07/owl#sourceIndividual>", i1), RDF(x, "<http://www.w3.org/2002/07/owl#assertionProperty>", p), RDF(x, "<http://www.w3.org/2002/07/owl#targetIndividual>", i2), RDF(i1, p, i2);
-    Reachable(i2, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(x, "<http://www.w3.org/2002/07/owl#sourceIndividual>", i1), RDF(x, "<http://www.w3.org/2002/07/owl#assertionProperty>", p), RDF(x, "<http://www.w3.org/2002/07/owl#targetIndividual>", i2), RDF(i1, p, i2);
+    // Reachable(i1, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(x, "<http://www.w3.org/2002/07/owl#sourceIndividual>", i1), RDF(x, "<http://www.w3.org/2002/07/owl#assertionProperty>", p), RDF(x, "<http://www.w3.org/2002/07/owl#targetIndividual>", i2), RDF(i1, p, i2);
+    // Reachable(i2, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(x, "<http://www.w3.org/2002/07/owl#sourceIndividual>", i1), RDF(x, "<http://www.w3.org/2002/07/owl#assertionProperty>", p), RDF(x, "<http://www.w3.org/2002/07/owl#targetIndividual>", i2), RDF(i1, p, i2);
 
     //prp-npa2
     // rdf(?i1, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") :- rdf(?x, "<http://www.w3.org/2002/07/owl#sourceIndividual>", ?i1), rdf(?x, "<http://www.w3.org/2002/07/owl#assertionProperty>", ?p), rdf(?x, "<http://www.w3.org/2002/07/owl#targetValue>", ?lt), rdf(?i1, ?p, ?lt).
-    Reachable(i1, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(x, "<http://www.w3.org/2002/07/owl#sourceIndividual>", i1), RDF(x, "<http://www.w3.org/2002/07/owl#assertionProperty>", p), RDF(x, "<http://www.w3.org/2002/07/owl#targetValue>", lt), RDF(i1, p, lt);
+    // Reachable(i1, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(x, "<http://www.w3.org/2002/07/owl#sourceIndividual>", i1), RDF(x, "<http://www.w3.org/2002/07/owl#assertionProperty>", p), RDF(x, "<http://www.w3.org/2002/07/owl#targetValue>", lt), RDF(i1, p, lt);
 
     //cls-int1
     //optimize by only creating ichains after two hops?
     // ichain(?i, ?c, ?y) :- rdf(?c, "<http://www.w3.org/2002/07/owl#intersectionOf>", ?x), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", ?c1), rdf(?i, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c1), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", ?y), ?y != "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>".
-    Reachable(i, c, y) <- RDF(c, "<http://www.w3.org/2002/07/owl#intersectionOf>", x), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", c1), RDF(i, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", y), (y != "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>");
+    // Reachable(i, c, y) <- RDF(c, "<http://www.w3.org/2002/07/owl#intersectionOf>", x), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", c1), RDF(i, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", y), (y != "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>");
     // ichain(?i, ?c, ?y) :- ichain(?i, ?c, ?x), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", ?c1), rdf(?i, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c1), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", ?y), ?y != "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>".
     // rdf(?i, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c) :- ichain(?i, ?c, ?x), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", ?c1), rdf(?i, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c1), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>").
-    Reachable(i, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c) <- RDF(i, c, x), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", c1), RDF(i, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>");
+    // Reachable(i, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c) <- RDF(i, c, x), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", c1), RDF(i, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>");
 
     //cls-int2
     // rdf(?y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c1) :- rdf(?c, "<http://www.w3.org/2002/07/owl#intersectionOf>", ?x), listContains(?x, ?c1), rdf(?y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c).
@@ -134,35 +134,35 @@ crepe! {
 
     //cls-com
     // rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") :- rdf(?c1, "<http://www.w3.org/2002/07/owl#complementOf>", ?c2), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c1), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c2).
-    Reachable(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(c1, "<http://www.w3.org/2002/07/owl#complementOf>", c2), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c2);
+    // Reachable(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(c1, "<http://www.w3.org/2002/07/owl#complementOf>", c2), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c2);
 
     //cls-svf1
     // rdf(?u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?x) :- rdf(?x, "<http://www.w3.org/2002/07/owl#someValuesFrom>", ?y), rdf(?x, "<http://www.w3.org/2002/07/owl#onProperty>", ?p), rdf(?u, ?p, ?v), rdf(?v, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?y).
-    Reachable(u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", x) <- RDF(x, "<http://www.w3.org/2002/07/owl#someValuesFrom>", y), RDF(x, "<http://www.w3.org/2002/07/owl#onProperty>", p), RDF(u, p, v), RDF(v, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", y);
+    // Reachable(u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", x) <- RDF(x, "<http://www.w3.org/2002/07/owl#someValuesFrom>", y), RDF(x, "<http://www.w3.org/2002/07/owl#onProperty>", p), RDF(u, p, v), RDF(v, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", y);
 
     //cls-svf2
     // rdf(?u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?x) :- rdf(?x, "<http://www.w3.org/2002/07/owl#someValuesFrom>", "<http://www.w3.org/2002/07/owl#Thing>"), rdf(?x, "<http://www.w3.org/2002/07/owl#onProperty>", ?p), rdf(?u, ?p, _).
-    Reachable(u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", x) <- RDF(x, "<http://www.w3.org/2002/07/owl#someValuesFrom>", "<http://www.w3.org/2002/07/owl#Thing>"), RDF(x, "<http://www.w3.org/2002/07/owl#onProperty>", p), RDF(u, p, _);
+    // Reachable(u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", x) <- RDF(x, "<http://www.w3.org/2002/07/owl#someValuesFrom>", "<http://www.w3.org/2002/07/owl#Thing>"), RDF(x, "<http://www.w3.org/2002/07/owl#onProperty>", p), RDF(u, p, _);
 
     //cls-avf
     // rdf(?v, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?y) :- rdf(?x, "<http://www.w3.org/2002/07/owl#allValuesFrom>", ?y), rdf(?x, "<http://www.w3.org/2002/07/owl#onProperty>", ?p), rdf(?u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?x), rdf(?u, ?p, ?v).
-    Reachable(v, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", y) <- RDF(x, "<http://www.w3.org/2002/07/owl#allValuesFrom>", y), RDF(x, "<http://www.w3.org/2002/07/owl#onProperty>", p), RDF(u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", x), RDF(u, p, v);
+    // Reachable(v, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", y) <- RDF(x, "<http://www.w3.org/2002/07/owl#allValuesFrom>", y), RDF(x, "<http://www.w3.org/2002/07/owl#onProperty>", p), RDF(u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", x), RDF(u, p, v);
 
     //cls-hv1
     // rdf(?u, ?p, ?y) :- rdf(?x, "<http://www.w3.org/2002/07/owl#hasValue>", ?y), rdf(?x, "<http://www.w3.org/2002/07/owl#onProperty>", ?p), rdf(?u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?x).
-    Reachable(u, p, y) <- RDF(x, "<http://www.w3.org/2002/07/owl#hasValue>", y), RDF(x, "<http://www.w3.org/2002/07/owl#onProperty>", p), RDF(u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", x);
+    // Reachable(u, p, y) <- RDF(x, "<http://www.w3.org/2002/07/owl#hasValue>", y), RDF(x, "<http://www.w3.org/2002/07/owl#onProperty>", p), RDF(u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", x);
 
     //cls-hv2
     // rdf(?u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?x) :- rdf(?x, "<http://www.w3.org/2002/07/owl#hasValue>", ?y), rdf(?x, "<http://www.w3.org/2002/07/owl#onProperty>", ?p), rdf(?u, ?p, ?y).
-    Reachable(u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", x) <- RDF(x, "<http://www.w3.org/2002/07/owl#hasValue>", y), RDF(x, "<http://www.w3.org/2002/07/owl#onProperty>", p), RDF(u, p, y);
+    // Reachable(u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", x) <- RDF(x, "<http://www.w3.org/2002/07/owl#hasValue>", y), RDF(x, "<http://www.w3.org/2002/07/owl#onProperty>", p), RDF(u, p, y);
 
     //cls-maxc1
     // rdf(?u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") :- rdf(?x, "<http://www.w3.org/2002/07/owl#maxCardinality>", "\"0\"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger>"), rdf(?x, "<http://www.w3.org/2002/07/owl#onProperty>", ?p), rdf(?u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?x), rdf(?u, ?p, _).
-    Reachable(u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(x, "<http://www.w3.org/2002/07/owl#maxCardinality>", "\"0\"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger>"), RDF(x, "<http://www.w3.org/2002/07/owl#onProperty>", p), RDF(u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", x), RDF(u, p, _);
+    // Reachable(u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(x, "<http://www.w3.org/2002/07/owl#maxCardinality>", "\"0\"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger>"), RDF(x, "<http://www.w3.org/2002/07/owl#onProperty>", p), RDF(u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", x), RDF(u, p, _);
 
     //cls-maxc2
     // rdf(?y1, "<http://www.w3.org/2002/07/owl#sameAs>", ?y2) :- rdf(?x, "<http://www.w3.org/2002/07/owl#maxCardinality>", "\"1\"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger>"), rdf(?x, "<http://www.w3.org/2002/07/owl#onProperty>", ?p), rdf(?u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?x), rdf(?u, ?p, ?y1), rdf(?u, ?p, ?y2).
-    Reachable(y1, "<http://www.w3.org/2002/07/owl#sameAs>", y2) <- RDF(x, "<http://www.w3.org/2002/07/owl#maxCardinality>", "\"1\"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger>"), RDF(x, "<http://www.w3.org/2002/07/owl#onProperty>", p), RDF(u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", x), RDF(u, p, y1), RDF(u, p, y2);
+    // Reachable(y1, "<http://www.w3.org/2002/07/owl#sameAs>", y2) <- RDF(x, "<http://www.w3.org/2002/07/owl#maxCardinality>", "\"1\"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger>"), RDF(x, "<http://www.w3.org/2002/07/owl#onProperty>", p), RDF(u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", x), RDF(u, p, y1), RDF(u, p, y2);
 
     //cls-maxqc1
     //TODO
@@ -182,19 +182,19 @@ crepe! {
 
     //cax-sco
     // rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c2) :- rdf(?c1, "<http://www.w3.org/2000/01/rdf-schema#subClassOf?", ?c2), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c1).
-    Reachable(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c2) <- RDF(c1, "<http://www.w3.org/2000/01/rdf-schema#subClassOf?", c2), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1);
+    // Reachable(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c2) <- RDF(c1, "<http://www.w3.org/2000/01/rdf-schema#subClassOf?", c2), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1);
 
     //cax-eqc1
     // rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c2) :- rdf(?c1, "<http://www.w3.org/2002/07/owl#equivalentClass>", ?c2), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c1).
-    Reachable(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c2) <- RDF(c1, "<http://www.w3.org/2002/07/owl#equivalentClass>", c2), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1);
+    // Reachable(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c2) <- RDF(c1, "<http://www.w3.org/2002/07/owl#equivalentClass>", c2), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1);
 
     //cax-eqc2
     // rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c1) :- rdf(?c1, "<http://www.w3.org/2002/07/owl#equivalentClass>", ?c2), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c2).
-    Reachable(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1) <- RDF(c1, "<http://www.w3.org/2002/07/owl#equivalentClass>", c2), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c2);
+    // Reachable(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1) <- RDF(c1, "<http://www.w3.org/2002/07/owl#equivalentClass>", c2), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c2);
 
     //cax-dw
     // rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") :- rdf(?c1, "<http://www.w3.org/2002/07/owl#disjointWith>", ?c2), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c1), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c2).
-    Reachable(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(c1, "<http://www.w3.org/2002/07/owl#disjointWith>", c2), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c2);
+    // Reachable(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(c1, "<http://www.w3.org/2002/07/owl#disjointWith>", c2), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c2);
 
     //cax-adc
     // rdf(?z, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") :- rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#AllDisjointClasses>"), rdf(?x, "<http://www.w3.org/2002/07/owl#members>", ?y), listContains(?y, ?ci), listContains(?y, ?cj), ?ci != ?cj, rdf(?z, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?ci), rdf(?z, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?cj).
@@ -236,7 +236,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let output_file = fs::File::create(&options.output)?;
     let mut bw = io::BufWriter::new(&output_file);
     for Reachable(x, y, z) in reachables {
-        bw.write_all(format!("{} {} {} .", x, y, z).as_bytes());
+        bw.write_all(format!("{} {} {} .", x, y, z).as_bytes())?;
     }
     info!("Duration: {}", format_duration(start.elapsed()).to_string());
     Ok(())
