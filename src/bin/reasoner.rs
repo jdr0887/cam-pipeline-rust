@@ -4,7 +4,7 @@ extern crate log;
 use std::error;
 use std::fs;
 use std::io;
-use std::io::{BufRead, Error};
+use std::io::{BufRead, BufWriter, Error, Write};
 use std::ops::Deref;
 use std::path;
 use std::time;
@@ -22,13 +22,13 @@ crepe! {
     @output
     struct Reachable<'a>(&'a str, &'a str, &'a str);
 
-    @input
-    struct Chain<'a>(&'a str, &'a str, &'a str, &'a str);
-
-    @output
-    struct Chainable<'a>(&'a str, &'a str, &'a str, &'a str);
-
-    struct ListContains<'a>(&'a str, &'a str);
+    // @input
+    // struct Chain<'a>(&'a str, &'a str, &'a str, &'a str);
+    //
+    // @output
+    // struct Chainable<'a>(&'a str, &'a str, &'a str, &'a str);
+    //
+    // struct ListContains<'a>(&'a str, &'a str);
 
     //prp-dom
     // rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c) :- rdf(?p, "<http://www.w3.org/2000/01/rdf-schema#domain>", ?c), rdf(?x, ?p, _).
@@ -70,11 +70,11 @@ crepe! {
     //prp-spo2
     //optimize by only creating chains after two hops?
     // chain(?s, ?p, ?o, ?y) :- rdf(?p, "<http://www.w3.org/2002/07/owl#propertyChainAxiom>", ?x), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", ?p1), rdf(?s, ?p1, ?o), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", ?y), ?y != "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>".
-    Chainable(s, p, o, y) <- RDF(p, "<http://www.w3.org/2002/07/owl#propertyChainAxiom>", x), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", p1), RDF(s, p1, o), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", y), (y != "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>");
+    // Chainable(s, p, o, y) <- RDF(p, "<http://www.w3.org/2002/07/owl#propertyChainAxiom>", x), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", p1), RDF(s, p1, o), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", y), (y != "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>");
     // chain(?s, ?p, ?o2, ?y) :- chain(?s, ?p, ?o, ?x), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", ?p1), rdf(?o, ?p1, ?o2), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", ?y), ?y != "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>".
-    Chainable(s, p, o2, y) <- Chain(s, p, o, x), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", p1), RDF(o, p1, o2), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", y), (y != "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>");
+    // Chainable(s, p, o2, y) <- Chain(s, p, o, x), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", p1), RDF(o, p1, o2), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", y), (y != "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>");
     // rdf(?s, ?p, ?o2) :- chain(?s, ?p, ?o, ?x), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", ?p1), rdf(?o, ?p1, ?o2), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>").
-    Reachable(s, p, o2) <- Chain(s, p, o, x), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", p1), RDF(o, p1, o2), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>");
+    // Reachable(s, p, o2) <- Chain(s, p, o, x), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", p1), RDF(o, p1, o2), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>");
 
     //prp-eqp1
     // rdf(?x, ?p2, ?y) :- rdf(?p1, "<http://www.w3.org/2002/07/owl#equivalentProperty>", ?p2), rdf(?x, ?p1, ?y).
@@ -93,7 +93,7 @@ crepe! {
     //prp-adp
     // rdf(?u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>"),
     // rdf(?v, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") :- rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#AllDisjointProperties>"), rdf(?x, "<http://www.w3.org/2002/07/owl#members>", ?y), listContains(?y, ?pi), listContains(?y, ?pj), ?pi != ?pj, rdf(?u, ?pi, ?v), rdf(?u, ?pj, ?v).
-    Reachable(u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#AllDisjointProperties>"), RDF(x, "<http://www.w3.org/2002/07/owl#members>", y), ListContains(y, pi), ListContains(y, pj), (pi != pj), RDF(u, pi, v), RDF(u, pj, v);
+    // Reachable(u, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#AllDisjointProperties>"), RDF(x, "<http://www.w3.org/2002/07/owl#members>", y), ListContains(y, pi), ListContains(y, pj), (pi != pj), RDF(u, pi, v), RDF(u, pj, v);
 
     //prp-inv1
     //rdf(?y, ?p2, ?x) :- rdf(?p1, "<http://www.w3.org/2002/07/owl#inverseOf>", ?p2), rdf(?x, ?p1, ?y).
@@ -126,11 +126,11 @@ crepe! {
 
     //cls-int2
     // rdf(?y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c1) :- rdf(?c, "<http://www.w3.org/2002/07/owl#intersectionOf>", ?x), listContains(?x, ?c1), rdf(?y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c).
-    Reachable(y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1) <- RDF(c, "<http://www.w3.org/2002/07/owl#intersectionOf>", x), ListContains(x, c1), RDF(y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c);
+    // Reachable(y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1) <- RDF(c, "<http://www.w3.org/2002/07/owl#intersectionOf>", x), ListContains(x, c1), RDF(y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c);
 
     //cls-uni
     // rdf(?y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c) :- rdf(?c, "<http://www.w3.org/2002/07/owl#unionOf>", ?x), listContains(?x, ?c1), rdf(?y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c1).
-    Reachable(y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c) <- RDF(c, "<http://www.w3.org/2002/07/owl#unionOf>", x), ListContains(x, c1), RDF(y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1);
+    // Reachable(y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c) <- RDF(c, "<http://www.w3.org/2002/07/owl#unionOf>", x), ListContains(x, c1), RDF(y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1);
 
     //cls-com
     // rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") :- rdf(?c1, "<http://www.w3.org/2002/07/owl#complementOf>", ?c2), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c1), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c2).
@@ -178,7 +178,7 @@ crepe! {
 
     //cls-oo
     // rdf(?y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c) :- rdf(?c, "<http://www.w3.org/2002/07/owl#oneOf>", ?x), listContains(?x, ?y).
-    Reachable(y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c) <- RDF(c, "<http://www.w3.org/2002/07/owl#oneOf>", x), ListContains(x, y);
+    // Reachable(y, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c) <- RDF(c, "<http://www.w3.org/2002/07/owl#oneOf>", x), ListContains(x, y);
 
     //cax-sco
     // rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c2) :- rdf(?c1, "<http://www.w3.org/2000/01/rdf-schema#subClassOf?", ?c2), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c1).
@@ -198,7 +198,7 @@ crepe! {
 
     //cax-adc
     // rdf(?z, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") :- rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#AllDisjointClasses>"), rdf(?x, "<http://www.w3.org/2002/07/owl#members>", ?y), listContains(?y, ?ci), listContains(?y, ?cj), ?ci != ?cj, rdf(?z, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?ci), rdf(?z, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?cj).
-    Reachable(z, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#AllDisjointClasses>"), RDF(x, "<http://www.w3.org/2002/07/owl#members>", y), ListContains(y, ci), ListContains(y, cj), (ci != cj), RDF(z, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ci), RDF(z, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", cj);
+    //Reachable(z, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#Nothing>") <- RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://www.w3.org/2002/07/owl#AllDisjointClasses>"), RDF(x, "<http://www.w3.org/2002/07/owl#members>", y), ListContains(y, ci), ListContains(y, cj), (ci != cj), RDF(z, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ci), RDF(z, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", cj);
 
 }
 
@@ -230,10 +230,13 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let mut runtime = Crepe::new();
     runtime.extend(data);
     debug!("data added to crepe");
-    let (reachables, chainables) = runtime.run();
+    let (reachables,) = runtime.run();
     debug!("finished runtime.run()");
+
+    let output_file = fs::File::create(&options.output)?;
+    let mut bw = io::BufWriter::new(&output_file);
     for Reachable(x, y, z) in reachables {
-        info!("{} {} {}", x, y, z);
+        bw.write_all(format!("{} {} {} .", x, y, z).as_bytes());
     }
     info!("Duration: {}", format_duration(start.elapsed()).to_string());
     Ok(())
