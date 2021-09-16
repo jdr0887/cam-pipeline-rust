@@ -16,9 +16,9 @@ use itertools::Itertools;
 use structopt::StructOpt;
 
 pub mod prp {
+    use std::error;
 
     use crepe::crepe;
-    use std::error;
 
     crepe! {
         @input
@@ -139,13 +139,13 @@ pub mod prp {
 }
 
 pub mod cls {
+    use std::error;
 
     use crepe::crepe;
-    use std::error;
 
     crepe! {
         @input
-        pub struct RDF<'a>(&'a str, &'a str, &'a str);
+        pub struct RDF<'a>(pub &'a str, pub &'a str, pub &'a str);
 
         @output
         pub struct Reachable<'a>(&'a str, &'a str, &'a str);
@@ -234,13 +234,13 @@ pub mod cls {
 }
 
 pub mod cax {
+    use std::error;
 
     use crepe::crepe;
-    use std::error;
 
     crepe! {
         @input
-        pub struct RDF<'a>(&'a str, &'a str, &'a str);
+        pub struct RDF<'a>(pub &'a str, pub &'a str, pub &'a str);
 
         @output
         pub struct Reachable<'a>(&'a str, &'a str, &'a str);
@@ -301,9 +301,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     let input = fs::read_to_string(&options.input)?;
 
-    let output_file = fs::File::create(&options.output)?;
-    let mut bw = io::BufWriter::new(&output_file);
-
+    debug!("reading raw data");
     let raw_data = input
         .lines()
         .into_iter()
@@ -321,13 +319,34 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     //     .map(|line| line.split(' ').collect())
     //     .map(|split: Vec<&str>| prp::RDF(split[0], split[1], split[2]))
     //     .collect_vec();
-    debug!("done reading");
 
+    debug!("processing prp rules");
+    let prp_output: path::PathBuf = options.output.clone().join("-prp.nt");
+    let mut prp_bw = io::BufWriter::new(fs::File::create(&prp_output)?);
     let prp_data = raw_data.iter().map(|split| prp::RDF(split[0], split[1], split[2])).collect_vec();
     let prp_results = prp::run(&prp_data)?;
     for (x, y, z) in prp_results.into_iter() {
-        bw.write_all(format!("{} {} {} .", x, y, z).as_bytes())?;
+        prp_bw.write_all(format!("{} {} {} .", x, y, z).as_bytes())?;
     }
+
+    debug!("processing cls rules");
+    let cls_output: path::PathBuf = options.output.clone().join("-cls.nt");
+    let mut cls_bw = io::BufWriter::new(fs::File::create(&cls_output)?);
+    let cls_data = raw_data.iter().map(|split| cls::RDF(split[0], split[1], split[2])).collect_vec();
+    let cls_results = cls::run(&cls_data)?;
+    for (x, y, z) in cls_results.into_iter() {
+        cls_bw.write_all(format!("{} {} {} .", x, y, z).as_bytes())?;
+    }
+
+    debug!("processing cax rules");
+    let cax_output: path::PathBuf = options.output.clone().join("-cax.nt");
+    let mut cax_bw = io::BufWriter::new(fs::File::create(&cax_output)?);
+    let cax_data = raw_data.iter().map(|split| cax::RDF(split[0], split[1], split[2])).collect_vec();
+    let cax_results = cax::run(&cax_data)?;
+    for (x, y, z) in cax_results.into_iter() {
+        cax_bw.write_all(format!("{} {} {} .", x, y, z).as_bytes())?;
+    }
+
     info!("Duration: {}", format_duration(start.elapsed()).to_string());
     Ok(())
 }
