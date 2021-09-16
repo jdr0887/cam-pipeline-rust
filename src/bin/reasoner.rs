@@ -164,6 +164,7 @@ pub mod cls {
         // ichain(?i, ?c, ?y) :- rdf(?c, "<http://www.w3.org/2002/07/owl#intersectionOf>", ?x), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", ?c1), rdf(?i, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c1), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", ?y), ?y != "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>".
         Reachable(i, c, y) <- RDF(c, "<http://www.w3.org/2002/07/owl#intersectionOf>", x), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", c1), RDF(i, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", y), (y != "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>");
         // ichain(?i, ?c, ?y) :- ichain(?i, ?c, ?x), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", ?c1), rdf(?i, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c1), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", ?y), ?y != "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>".
+        Reachable(i, c, y) <- RDF(i, c, x), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", c1), RDF(i, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>");
         // rdf(?i, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c) :- ichain(?i, ?c, ?x), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", ?c1), rdf(?i, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", ?c1), rdf(?x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>").
         Reachable(i, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c) <- RDF(i, c, x), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>", c1), RDF(i, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", c1), RDF(x, "<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>");
 
@@ -320,23 +321,23 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     //     .map(|split: Vec<&str>| prp::RDF(split[0], split[1], split[2]))
     //     .collect_vec();
 
-    debug!("processing prp rules");
-    let prp_output: path::PathBuf = options.output.clone().join("reasoned-prp.nt");
-    let mut prp_bw = io::BufWriter::new(fs::File::create(&prp_output)?);
-    let prp_data = raw_data.iter().map(|split| prp::RDF(split[0], split[1], split[2])).collect_vec();
-    let prp_results = prp::run(&prp_data)?;
-    for (x, y, z) in prp_results.into_iter() {
-        prp_bw.write_all(format!("{} {} {} .", x, y, z).as_bytes())?;
-    }
+    // debug!("processing prp rules");
+    // let prp_output: path::PathBuf = options.output.clone().join("reasoned-prp.nt");
+    // let mut prp_bw = io::BufWriter::new(fs::File::create(&prp_output)?);
+    // let prp_data = raw_data.iter().map(|split| prp::RDF(split[0], split[1], split[2])).collect_vec();
+    // let prp_results = prp::run(&prp_data)?;
+    // for (x, y, z) in prp_results.into_iter() {
+    //     prp_bw.write_all(format!("{} {} {} .", x, y, z).as_bytes())?;
+    // }
 
-    debug!("processing cls rules");
-    let cls_output: path::PathBuf = options.output.clone().join("reasoned-cls.nt");
-    let mut cls_bw = io::BufWriter::new(fs::File::create(&cls_output)?);
-    let cls_data = raw_data.iter().map(|split| cls::RDF(split[0], split[1], split[2])).collect_vec();
-    let cls_results = cls::run(&cls_data)?;
-    for (x, y, z) in cls_results.into_iter() {
-        cls_bw.write_all(format!("{} {} {} .", x, y, z).as_bytes())?;
-    }
+    // debug!("processing cls rules");
+    // let cls_output: path::PathBuf = options.output.clone().join("reasoned-cls.nt");
+    // let mut cls_bw = io::BufWriter::new(fs::File::create(&cls_output)?);
+    // let cls_data = raw_data.iter().map(|split| cls::RDF(split[0], split[1], split[2])).collect_vec();
+    // let cls_results = cls::run(&cls_data)?;
+    // for (x, y, z) in cls_results.into_iter() {
+    //     cls_bw.write_all(format!("{} {} {} .", x, y, z).as_bytes())?;
+    // }
 
     debug!("processing cax rules");
     let cax_output: path::PathBuf = options.output.clone().join("reasoned-cax.nt");
