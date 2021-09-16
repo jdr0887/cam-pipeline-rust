@@ -321,7 +321,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     //     .collect_vec();
 
     debug!("processing prp rules");
-    let prp_output: path::PathBuf = options.output.clone().join("-prp.nt");
+    let prp_output: path::PathBuf = options.output.clone().join("reasoned-prp.nt");
     let mut prp_bw = io::BufWriter::new(fs::File::create(&prp_output)?);
     let prp_data = raw_data.iter().map(|split| prp::RDF(split[0], split[1], split[2])).collect_vec();
     let prp_results = prp::run(&prp_data)?;
@@ -330,7 +330,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     }
 
     debug!("processing cls rules");
-    let cls_output: path::PathBuf = options.output.clone().join("-cls.nt");
+    let cls_output: path::PathBuf = options.output.clone().join("reasoned-cls.nt");
     let mut cls_bw = io::BufWriter::new(fs::File::create(&cls_output)?);
     let cls_data = raw_data.iter().map(|split| cls::RDF(split[0], split[1], split[2])).collect_vec();
     let cls_results = cls::run(&cls_data)?;
@@ -339,7 +339,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     }
 
     debug!("processing cax rules");
-    let cax_output: path::PathBuf = options.output.clone().join("-cax.nt");
+    let cax_output: path::PathBuf = options.output.clone().join("reasoned-cax.nt");
     let mut cax_bw = io::BufWriter::new(fs::File::create(&cax_output)?);
     let cax_data = raw_data.iter().map(|split| cax::RDF(split[0], split[1], split[2])).collect_vec();
     let cax_results = cax::run(&cax_data)?;
